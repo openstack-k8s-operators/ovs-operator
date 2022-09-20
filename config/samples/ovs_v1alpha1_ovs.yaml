@@ -1,0 +1,6 @@
+apiVersion: ovs.openstack.org/v1alpha1
+kind: OVS
+metadata:
+  name: ovs-sample
+spec:
+  # TODO(user): Add fields here
