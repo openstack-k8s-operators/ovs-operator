@@ -6,15 +6,15 @@ import (
 
 // InitContainer information
 type InitContainer struct {
-	Privileged           bool
-	ContainerImage       string
-	Database             string
-	DatabaseHost         string
-	NeutronSecret        string
-	DBPasswordSelector   string
-	NovaPasswordSelector string
-	UserPasswordSelector string
-	VolumeMounts         []corev1.VolumeMount
+	Privileged     bool
+	ContainerImage string
+	SystemID       string
+	Hostname       string
+	OvnBridge      string
+	OvnRemote      string
+	OvnEncapType   string
+	OvnEncapIP     string
+	VolumeMounts   []corev1.VolumeMount
 }
 
 // GetInitContainer - init container for Open vSwitch services
@@ -38,57 +38,25 @@ func GetInitContainer(init InitContainer) []corev1.Container {
 				"/bin/bash", "-c", "/usr/local/bin/container-scripts/init.sh",
 			},
 			Env: []corev1.EnvVar{
-				//	{
-				//		Name: "TransportURL",
-				//		ValueFrom: &corev1.EnvVarSource{
-				//			SecretKeyRef: &corev1.SecretKeySelector{
-				//				LocalObjectReference: corev1.LocalObjectReference{
-				//					Name: init.NeutronSecret,
-				//				},
-				//				Key: "TransportUrl",
-				//			},
-				//		},
-				//	},
 				{
-					Name:  "DatabaseHost",
-					Value: init.DatabaseHost,
+					Name:  "Hostname",
+					Value: init.Hostname,
 				},
 				{
-					Name:  "Database",
-					Value: init.Database,
+					Name:  "OvnBridge",
+					Value: init.OvnBridge,
 				},
 				{
-					Name: "DatabasePassword",
-					ValueFrom: &corev1.EnvVarSource{
-						SecretKeyRef: &corev1.SecretKeySelector{
-							LocalObjectReference: corev1.LocalObjectReference{
-								Name: init.NeutronSecret,
-							},
-							Key: init.DBPasswordSelector,
-						},
-					},
+					Name:  "OvnRemote",
+					Value: init.OvnRemote,
 				},
 				{
-					Name: "NeutronPassword",
-					ValueFrom: &corev1.EnvVarSource{
-						SecretKeyRef: &corev1.SecretKeySelector{
-							LocalObjectReference: corev1.LocalObjectReference{
-								Name: init.NeutronSecret,
-							},
-							Key: init.UserPasswordSelector,
-						},
-					},
+					Name:  "OvnEncapType",
+					Value: init.OvnEncapType,
 				},
 				{
-					Name: "NovaPassword",
-					ValueFrom: &corev1.EnvVarSource{
-						SecretKeyRef: &corev1.SecretKeySelector{
-							LocalObjectReference: corev1.LocalObjectReference{
-								Name: init.NeutronSecret,
-							},
-							Key: init.NovaPasswordSelector,
-						},
-					},
+					Name:  "OvnEncapIP",
+					Value: init.OvnEncapIP,
 				},
 			},
 			VolumeMounts: init.VolumeMounts,

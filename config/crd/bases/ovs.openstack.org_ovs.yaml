@@ -43,6 +43,10 @@ spec:
                     type: string
                   ovn-bridge:
                     type: string
+                  ovn-encap-ip:
+                    type: string
+                  ovn-encap-type:
+                    type: string
                   ovn-remote:
                     type: string
                   system-id:
@@ -50,6 +54,8 @@ spec:
                 required:
                 - hostname
                 - ovn-bridge
+                - ovn-encap-ip
+                - ovn-encap-type
                 - ovn-remote
                 - system-id
                 type: object

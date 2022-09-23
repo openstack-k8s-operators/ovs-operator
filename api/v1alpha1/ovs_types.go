@@ -92,8 +92,10 @@ func (instance OVS) IsReady() bool {
 
 // OVSExternalIDs is a set of configuration options for OVS external-ids table
 type OVSExternalIDs struct {
-	SystemID  string `json:"system-id"`
-	Hostname  string `json:"hostname"`
-	OvnBridge string `json:"ovn-bridge"`
-	OvnRemote string `json:"ovn-remote"`
+	SystemID     string `json:"system-id"`
+	Hostname     string `json:"hostname"`
+	OvnBridge    string `json:"ovn-bridge"`
+	OvnRemote    string `json:"ovn-remote"`
+	OvnEncapType string `json:"ovn-encap-type"`
+	OvnEncapIP   string `json:"ovn-encap-ip"`
 }

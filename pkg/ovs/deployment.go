@@ -129,6 +129,11 @@ func Deployment(
 
 	initContainerDetails := InitContainer{
 		ContainerImage: instance.Spec.ContainerImage,
+		Hostname:       instance.Spec.ExternalIDS.Hostname,
+		OvnBridge:      instance.Spec.ExternalIDS.OvnBridge,
+		OvnRemote:      instance.Spec.ExternalIDS.OvnRemote,
+		OvnEncapType:   instance.Spec.ExternalIDS.OvnEncapType,
+		OvnEncapIP:     instance.Spec.ExternalIDS.OvnEncapIP,
 		VolumeMounts:   GetInitVolumeMounts(),
 	}
 	deployment.Spec.Template.Spec.InitContainers = GetInitContainer(initContainerDetails)

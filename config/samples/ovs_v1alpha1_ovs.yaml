@@ -5,3 +5,11 @@ metadata:
 spec:
   replicas: 1
   containerImage: "ovs:latest"
+  external-ids:
+    system-id: "random"
+    hostname: "devcontainer"
+    ovn-bridge: "br-int"
+    ovn-remote: "tcp:1.2.3.4:6442"
+    ovn-encap-type: "geneve,vxlan"
+    ovn-encap-ip: "10.20.30.40"
+
