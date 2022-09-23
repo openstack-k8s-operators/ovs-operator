@@ -38,6 +38,8 @@ spec:
               containerImage:
                 type: string
               external-ids:
+                description: OVSExternalIDs is a set of configuration options for
+                  OVS external-ids table
                 properties:
                   hostname:
                     type: string

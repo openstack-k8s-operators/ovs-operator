@@ -54,7 +54,7 @@ func Deployment(
 		InitialDelaySeconds: 5,
 	} */
 
-	args := []string{"-c"}
+	args := []string{}
 	/* args = append(args, ServiceCommand)
 	//
 	// https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
@@ -91,10 +91,29 @@ func Deployment(
 				Spec: corev1.PodSpec{
 					ServiceAccountName: ServiceAccountName,
 					Containers: []corev1.Container{
+						// ovsdb-server container
 						{
+							Name: ServiceName + "db-server",
+							Command: []string{
+								"/usr/bin/start-ovs",
+								"ovsdb-server",
+							},
+							Args:  args,
+							Image: instance.Spec.ContainerImage,
+							SecurityContext: &corev1.SecurityContext{
+								RunAsUser: &runAsUser,
+							},
+							Env:          env.MergeEnvs([]corev1.EnvVar{}, envVars),
+							VolumeMounts: GetAPIVolumeMounts(),
+							Resources:    instance.Spec.Resources,
+							//ReadinessProbe: readinessProbe,
+							//LivenessProbe:  livenessProbe,
+						}, {
+							// ovs-vswitchd container
 							Name: ServiceName + "-vswitchd",
 							Command: []string{
-								"/bin/bash",
+								"/usr/bin/start-ovs",
+								"ovs-vswitchd",
 							},
 							Args:  args,
 							Image: instance.Spec.ContainerImage,
@@ -107,6 +126,7 @@ func Deployment(
 							//ReadinessProbe: readinessProbe,
 							//LivenessProbe:  livenessProbe,
 						},
+						// TODO(slaweq): ovn-controller container
 					},
 				},
 			},
@@ -127,7 +147,8 @@ func Deployment(
 		deployment.Spec.Template.Spec.NodeSelector = instance.Spec.NodeSelector
 	}
 
-	initContainerDetails := InitContainer{
+	// TODO(slaweq): Do I really need InitContainer? Maybe this can be done somehow differently?
+	/* initContainerDetails := InitContainer{
 		ContainerImage: instance.Spec.ContainerImage,
 		Hostname:       instance.Spec.ExternalIDS.Hostname,
 		OvnBridge:      instance.Spec.ExternalIDS.OvnBridge,
@@ -136,7 +157,7 @@ func Deployment(
 		OvnEncapIP:     instance.Spec.ExternalIDS.OvnEncapIP,
 		VolumeMounts:   GetInitVolumeMounts(),
 	}
-	deployment.Spec.Template.Spec.InitContainers = GetInitContainer(initContainerDetails)
+	deployment.Spec.Template.Spec.InitContainers = GetInitContainer(initContainerDetails) */
 
 	return deployment
 

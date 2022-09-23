@@ -8,7 +8,6 @@ import (
 type InitContainer struct {
 	Privileged     bool
 	ContainerImage string
-	SystemID       string
 	Hostname       string
 	OvnBridge      string
 	OvnRemote      string
