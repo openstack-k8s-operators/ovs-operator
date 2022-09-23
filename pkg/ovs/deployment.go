@@ -24,10 +24,12 @@ import (
 )
 
 const (
-	// ServiceCommand -
+	// VswitchdServiceCommand -
 	VswitchdServiceCommand = "/usr/bin/start-ovs ovs-vswitchd"
-	OvsDbServiceCommand    = "/usr/bin/start ovsdb-server"
-	OvnControllerCommand   = "" //TODO: command for ovn controller start is needed
+	// OvsDbServiceCommand -
+	OvsDbServiceCommand = "/usr/bin/start ovsdb-server"
+	// OvnControllerCommand -
+	OvnControllerCommand = "" //TODO: command for ovn controller start is needed
 )
 
 // Deployment func

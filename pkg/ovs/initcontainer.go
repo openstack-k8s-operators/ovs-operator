@@ -17,7 +17,7 @@ type InitContainer struct {
 	VolumeMounts         []corev1.VolumeMount
 }
 
-// GetInitContainer - init container for cinder services
+// GetInitContainer - init container for Open vSwitch services
 func GetInitContainer(init InitContainer) []corev1.Container {
 	runAsUser := int64(0)
 	trueVar := true

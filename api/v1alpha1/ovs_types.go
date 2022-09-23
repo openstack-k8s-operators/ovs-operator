@@ -25,15 +25,6 @@ import (
 
 // OVSSpec defines the desired state of OVS
 type OVSSpec struct {
-	//TODO(slaweq): should we have here some config options for OVN, like
-	// system-id
-	// hostname
-	// ovn-bridge
-	// ovn-bridge-mappings
-	// ovn-remote
-	// ovn-encap-ip
-	// and maybe more, see in docs https://man7.org/linux/man-pages/man8/ovn-controller.8.html
-
 	// +kubebuilder:validation:Optional
 	// +kubebuilder:default=1
 	// +kubebuilder:validation:Maximum=1
@@ -99,6 +90,7 @@ func (instance OVS) IsReady() bool {
 	return instance.Status.ReadyCount >= 1
 }
 
+// OVSExternalIDs is a set of configuration options for OVS external-ids table
 type OVSExternalIDs struct {
 	SystemID  string `json:"system-id"`
 	Hostname  string `json:"hostname"`

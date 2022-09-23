@@ -49,10 +49,12 @@ type OVSReconciler struct {
 	Scheme  *runtime.Scheme
 }
 
+// GetClient -
 func (r *OVSReconciler) GetClient() client.Client {
 	return r.Client
 }
 
+// GetLogger -
 func (r *OVSReconciler) GetLogger() logr.Logger {
 	return r.Log
 }
@@ -66,6 +68,8 @@ func (r *OVSReconciler) GetLogger() logr.Logger {
 // +kubebuilder:rbac:groups=batch,resources=jobs,verbs=get;list;watch;create;patch;update;delete;
 // +kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;patch;update;delete;
 // +kubebuilder:rbac:groups=route.openshift.io,resources=routes,verbs=get;list;watch;create;update;patch;delete;
+
+// Reconcile - OVS
 func (r *OVSReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	//_ = context.Background()
 	_ = r.Log.WithValues("ovs", req.NamespacedName)

@@ -2,7 +2,7 @@ package ovs
 
 import corev1 "k8s.io/api/core/v1"
 
-// GetInitVolumeMounts
+// GetInitVolumeMounts -
 func GetInitVolumeMounts() []corev1.VolumeMount {
 	return []corev1.VolumeMount{
 		{
