@@ -17,25 +17,54 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"github.com/openstack-k8s-operators/lib-common/modules/common/condition"
+
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
-
 // OVSSpec defines the desired state of OVS
 type OVSSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	//TODO(slaweq): should we have here some config options for OVN, like
+	// system-id
+	// hostname
+	// ovn-bridge
+	// ovn-bridge-mappings
+	// ovn-remote
+	// ovn-encap-ip
+	// and maybe more, see in docs https://man7.org/linux/man-pages/man8/ovn-controller.8.html
 
-	// Foo is an example field of OVS. Edit ovs_types.go to remove/update
-	Foo string `json:"foo,omitempty"`
+	// +kubebuilder:validation:Optional
+	// +kubebuilder:default=1
+	// +kubebuilder:validation:Maximum=1
+	// +kubebuilder:validation:Minimum=0
+	// Replicas of neutron API to run
+	Replicas int32 `json:"replicas,omitempty"`
+
+	ExternalIDS OVSExternalIDs `json:"external-ids"`
+
+	ContainerImage string `json:"containerImage,omitempty"`
+
+	// +kubebuilder:validation:Optional
+	// Resources - Compute Resources required by this service (Limits/Requests).
+	// https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+	Resources corev1.ResourceRequirements `json:"resources,omitempty"`
+
+	// +kubebuilder:validation:Optional
+	// NodeSelector to target subset of worker nodes running this service
+	NodeSelector map[string]string `json:"nodeSelector,omitempty"`
 }
 
 // OVSStatus defines the observed state of OVS
 type OVSStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	// ReadyCount of the ovs instances
+	ReadyCount int32 `json:"readyCount,omitempty"`
+
+	// Conditions
+	Conditions condition.Conditions `json:"conditions,omitempty" optional:"true"`
+
+	// Map of hashes to track e.g. job status
+	Hash map[string]string `json:"hash,omitempty"`
 }
 
 //+kubebuilder:object:root=true
@@ -61,4 +90,18 @@ type OVSList struct {
 
 func init() {
 	SchemeBuilder.Register(&OVS{}, &OVSList{})
+}
+
+// IsReady - returns true if service is ready to server requests
+func (instance OVS) IsReady() bool {
+	// Ready when:
+	// there is at least a single pod to running OVS and ovn-controller
+	return instance.Status.ReadyCount >= 1
+}
+
+type OVSExternalIDs struct {
+	SystemID  string `json:"system-id"`
+	Hostname  string `json:"hostname"`
+	OvnBridge string `json:"ovn-bridge"`
+	OvnRemote string `json:"ovn-remote"`
 }

@@ -1,6 +1,7 @@
 apiVersion: ovs.openstack.org/v1alpha1
 kind: OVS
 metadata:
-  name: ovs-sample
+  name: openvswitch
 spec:
-  # TODO(user): Add fields here
+  replicas: 1
+  containerImage: "ovs:latest"
