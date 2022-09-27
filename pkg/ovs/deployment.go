@@ -23,15 +23,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-const (
-	// VswitchdServiceCommand -
-	VswitchdServiceCommand = "/usr/bin/start-ovs ovs-vswitchd"
-	// OvsDbServiceCommand -
-	OvsDbServiceCommand = "/usr/bin/start ovsdb-server"
-	// OvnControllerCommand -
-	OvnControllerCommand = "" //TODO: command for ovn controller start is needed
-)
-
 // Deployment func
 func Deployment(
 	instance *v1alpha1.OVS,
@@ -101,6 +92,10 @@ func Deployment(
 							Args:  args,
 							Image: instance.Spec.ContainerImage,
 							SecurityContext: &corev1.SecurityContext{
+								Capabilities: &corev1.Capabilities{
+									Add:  []corev1.Capability{"NET_ADMIN", "SYS_ADMIN", "SYS_NICE"},
+									Drop: []corev1.Capability{},
+								},
 								RunAsUser: &runAsUser,
 							},
 							Env:          env.MergeEnvs([]corev1.EnvVar{}, envVars),
@@ -118,6 +113,10 @@ func Deployment(
 							Args:  args,
 							Image: instance.Spec.ContainerImage,
 							SecurityContext: &corev1.SecurityContext{
+								Capabilities: &corev1.Capabilities{
+									Add:  []corev1.Capability{"NET_ADMIN", "SYS_ADMIN", "SYS_NICE"},
+									Drop: []corev1.Capability{},
+								},
 								RunAsUser: &runAsUser,
 							},
 							Env:          env.MergeEnvs([]corev1.EnvVar{}, envVars),
