@@ -1,36 +1,23 @@
 package ovs
 
-import corev1 "k8s.io/api/core/v1"
+import (
+	corev1 "k8s.io/api/core/v1"
+)
 
+/*
+NOTE(slaweq): this is used only for InitContainer, so maybe we don't need it here
 // GetInitVolumeMounts -
 func GetInitVolumeMounts() []corev1.VolumeMount {
-	return []corev1.VolumeMount{
-		{
-			Name:      "scripts",
-			MountPath: "/usr/local/bin/container-scripts",
-			ReadOnly:  true,
-		},
-		{
-			Name:      "config-data",
-			MountPath: "/var/lib/config-data/default",
-			ReadOnly:  true,
-		},
-		{
-			Name:      "config-data-merged",
-			MountPath: "/var/lib/config-data/merged",
-			ReadOnly:  false,
-		},
-	}
+	return []corev1.VolumeMount{}
 
 }
+*/
 
-// GetAPIVolumes -
+// GetVolumes -
 // TODO: merge to GetVolumes when other controllers also switched to current config
 //       mechanism.
-func GetAPIVolumes(name string) []corev1.Volume {
-	var scriptsVolumeDefaultMode int32 = 0755
-	var config0640AccessMode int32 = 0640
-
+func GetVolumes(name string) []corev1.Volume {
+	//source_type := corev1.HostPathDirectoryOrCreate
 	return []corev1.Volume{
 		{
 			Name: "etc-machine-id",
@@ -49,39 +36,47 @@ func GetAPIVolumes(name string) []corev1.Volume {
 			},
 		},
 		{
-			Name: "scripts",
+			Name: "etc-ovs",
 			VolumeSource: corev1.VolumeSource{
-				ConfigMap: &corev1.ConfigMapVolumeSource{
-					DefaultMode: &scriptsVolumeDefaultMode,
-					LocalObjectReference: corev1.LocalObjectReference{
-						Name: name + "-scripts",
-					},
-				},
+				//TODO (slaweq): it will probably need to be HostPath type but when I'm using it I got error like:
+				// Creating empty database /etc/openvswitch/conf.db ovsdb-tool: I/O error: /etc/openvswitch/conf.db: failed to lock lockfile (Resource temporarily unavailable)
+				// and containers aren't started
+				EmptyDir: &corev1.EmptyDirVolumeSource{},
 			},
 		},
 		{
-			Name: "config-data",
+			Name: "var-run",
 			VolumeSource: corev1.VolumeSource{
-				ConfigMap: &corev1.ConfigMapVolumeSource{
-					DefaultMode: &config0640AccessMode,
-					LocalObjectReference: corev1.LocalObjectReference{
-						Name: name + "-config-data",
-					},
-				},
+				//TODO (slaweq): it will probably need to be HostPath type but when I'm using it I got error like:
+				// Creating empty database /etc/openvswitch/conf.db ovsdb-tool: I/O error: /etc/openvswitch/conf.db: failed to lock lockfile (Resource temporarily unavailable)
+				// and containers aren't started
+				EmptyDir: &corev1.EmptyDirVolumeSource{},
 			},
 		},
 		{
-			Name: "config-data-merged",
+			Name: "var-log",
 			VolumeSource: corev1.VolumeSource{
-				EmptyDir: &corev1.EmptyDirVolumeSource{Medium: ""},
+				//TODO (slaweq): it will probably need to be HostPath type but when I'm using it I got error like:
+				// Creating empty database /etc/openvswitch/conf.db ovsdb-tool: I/O error: /etc/openvswitch/conf.db: failed to lock lockfile (Resource temporarily unavailable)
+				// and containers aren't started
+				EmptyDir: &corev1.EmptyDirVolumeSource{},
+			},
+		},
+		{
+			Name: "var-lib",
+			VolumeSource: corev1.VolumeSource{
+				//TODO (slaweq): it will probably need to be HostPath type but when I'm using it I got error like:
+				// Creating empty database /etc/openvswitch/conf.db ovsdb-tool: I/O error: /etc/openvswitch/conf.db: failed to lock lockfile (Resource temporarily unavailable)
+				// and containers aren't started
+				EmptyDir: &corev1.EmptyDirVolumeSource{},
 			},
 		},
 	}
 
 }
 
-// GetAPIVolumeMounts - Neutron API VolumeMounts
-func GetAPIVolumeMounts() []corev1.VolumeMount {
+// GetOvsDbVolumeMounts - ovsdb-server VolumeMounts
+func GetOvsDbVolumeMounts() []corev1.VolumeMount {
 	return []corev1.VolumeMount{
 		{
 			Name:      "etc-machine-id",
@@ -94,13 +89,54 @@ func GetAPIVolumeMounts() []corev1.VolumeMount {
 			ReadOnly:  true,
 		},
 		{
-			Name:      "scripts",
-			MountPath: "/usr/local/bin/container-scripts",
+			Name:      "etc-ovs",
+			MountPath: "/etc/openvswitch",
+			ReadOnly:  false,
+		},
+		{
+			Name:      "var-run",
+			MountPath: "/var/run/openvswitch",
+			ReadOnly:  false,
+		},
+		{
+			Name:      "var-log",
+			MountPath: "/var/log/openvswitch",
+			ReadOnly:  false,
+		},
+		{
+			Name:      "var-lib",
+			MountPath: "/var/lib/openvswitch",
+			ReadOnly:  false,
+		},
+	}
+}
+
+// GetVswitchdVolumeMounts - ovs-vswitchd VolumeMounts
+func GetVswitchdVolumeMounts() []corev1.VolumeMount {
+	return []corev1.VolumeMount{
+		{
+			Name:      "etc-machine-id",
+			MountPath: "/etc/machine-id",
 			ReadOnly:  true,
 		},
 		{
-			Name:      "config-data-merged",
-			MountPath: "/var/lib/config-data/merged",
+			Name:      "etc-localtime",
+			MountPath: "/etc/localtime",
+			ReadOnly:  true,
+		},
+		{
+			Name:      "var-run",
+			MountPath: "/var/run/openvswitch",
+			ReadOnly:  false,
+		},
+		{
+			Name:      "var-log",
+			MountPath: "/var/log/openvswitch",
+			ReadOnly:  false,
+		},
+		{
+			Name:      "var-lib",
+			MountPath: "/var/lib/openvswitch",
 			ReadOnly:  false,
 		},
 	}

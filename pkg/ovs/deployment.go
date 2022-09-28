@@ -99,11 +99,11 @@ func Deployment(
 								},
 								RunAsUser: &runAsUser,
 							},
-							Env:          env.MergeEnvs([]corev1.EnvVar{}, envVars),
-							VolumeMounts: GetAPIVolumeMounts(),
-							Resources:    instance.Spec.Resources,
 							//ReadinessProbe: readinessProbe,
 							//LivenessProbe:  livenessProbe,
+							Env:           env.MergeEnvs([]corev1.EnvVar{}, envVars),
+							VolumeMounts:  GetOvsDbVolumeMounts(),
+							Resources:     instance.Spec.Resources,
 						}, {
 							// ovs-vswitchd container
 							Name: ServiceName + "-vswitchd",
@@ -120,11 +120,11 @@ func Deployment(
 								},
 								RunAsUser: &runAsUser,
 							},
-							Env:          env.MergeEnvs([]corev1.EnvVar{}, envVars),
-							VolumeMounts: GetAPIVolumeMounts(),
-							Resources:    instance.Spec.Resources,
 							//ReadinessProbe: readinessProbe,
 							//LivenessProbe:  livenessProbe,
+							Env:           env.MergeEnvs([]corev1.EnvVar{}, envVars),
+							VolumeMounts:  GetVswitchdVolumeMounts(),
+							Resources:     instance.Spec.Resources,
 						},
 						// TODO(slaweq): ovn-controller container
 					},
@@ -132,7 +132,7 @@ func Deployment(
 			},
 		},
 	}
-	deployment.Spec.Template.Spec.Volumes = GetAPIVolumes(instance.Name)
+	deployment.Spec.Template.Spec.Volumes = GetVolumes(instance.Name)
 	// If possible two pods of the same service should not
 	// run on the same worker node. If this is not possible
 	// the get still created on the same worker node.
