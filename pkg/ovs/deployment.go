@@ -31,33 +31,35 @@ func Deployment(
 ) *appsv1.Deployment {
 
 	runAsUser := int64(0)
+	args := []string{}
 
-	/* livenessProbe := &corev1.Probe{
+	//
+	// https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+	//
+	ovsDbLivenessProbe := &corev1.Probe{
 		// TODO might need tuning
 		TimeoutSeconds:      5,
 		PeriodSeconds:       3,
 		InitialDelaySeconds: 3,
 	}
-	readinessProbe := &corev1.Probe{
+	ovsDbLivenessProbe.Exec = &corev1.ExecAction{
+		Command: []string{
+			"/usr/bin/ovs-vsctl",
+			"show",
+		},
+	}
+	ovsVswitchdLivenessProbe := &corev1.Probe{
 		// TODO might need tuning
 		TimeoutSeconds:      5,
-		PeriodSeconds:       5,
-		InitialDelaySeconds: 5,
-	} */
-
-	args := []string{}
-	/* args = append(args, ServiceCommand)
-	//
-	// https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
-	//
-	livenessProbe.HTTPGet = &corev1.HTTPGetAction{
-		Path: "/",
-		Port: intstr.IntOrString{Type: intstr.Int, IntVal: int32(NeutronPublicPort)},
+		PeriodSeconds:       3,
+		InitialDelaySeconds: 3,
 	}
-	readinessProbe.HTTPGet = &corev1.HTTPGetAction{
-		Path: "/",
-		Port: intstr.IntOrString{Type: intstr.Int, IntVal: int32(NeutronPublicPort)},
-	} */
+	ovsVswitchdLivenessProbe.Exec = &corev1.ExecAction{
+		Command: []string{
+			"/usr/bin/ovs-appctl",
+			"bond/show",
+		},
+	}
 
 	envVars := map[string]env.Setter{}
 	envVars["KOLLA_CONFIG_FILE"] = env.SetValue(KollaConfigAPI)
@@ -99,11 +101,10 @@ func Deployment(
 								},
 								RunAsUser: &runAsUser,
 							},
-							//ReadinessProbe: readinessProbe,
-							//LivenessProbe:  livenessProbe,
 							Env:           env.MergeEnvs([]corev1.EnvVar{}, envVars),
 							VolumeMounts:  GetOvsDbVolumeMounts(),
 							Resources:     instance.Spec.Resources,
+							LivenessProbe: ovsDbLivenessProbe,
 						}, {
 							// ovs-vswitchd container
 							Name: ServiceName + "-vswitchd",
@@ -120,11 +121,10 @@ func Deployment(
 								},
 								RunAsUser: &runAsUser,
 							},
-							//ReadinessProbe: readinessProbe,
-							//LivenessProbe:  livenessProbe,
 							Env:           env.MergeEnvs([]corev1.EnvVar{}, envVars),
 							VolumeMounts:  GetVswitchdVolumeMounts(),
 							Resources:     instance.Spec.Resources,
+							LivenessProbe: ovsVswitchdLivenessProbe,
 						},
 						// TODO(slaweq): ovn-controller container
 					},
