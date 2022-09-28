@@ -81,6 +81,7 @@ func Deployment(
 				},
 				Spec: corev1.PodSpec{
 					ServiceAccountName: ServiceAccountName,
+					HostNetwork:        instance.Spec.HostNetwork,
 					Containers: []corev1.Container{
 						// ovsdb-server container
 						{

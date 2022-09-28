@@ -61,6 +61,9 @@ spec:
                 - ovn-remote
                 - system-id
                 type: object
+              hostNetwork:
+                default: false
+                type: boolean
               nodeSelector:
                 additionalProperties:
                   type: string
@@ -69,7 +72,7 @@ spec:
                 type: object
               replicas:
                 default: 1
-                description: Replicas of neutron API to run
+                description: Replicas of OVS to run
                 format: int32
                 maximum: 1
                 minimum: 0

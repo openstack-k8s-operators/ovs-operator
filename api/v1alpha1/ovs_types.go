@@ -29,12 +29,16 @@ type OVSSpec struct {
 	// +kubebuilder:default=1
 	// +kubebuilder:validation:Maximum=1
 	// +kubebuilder:validation:Minimum=0
-	// Replicas of neutron API to run
+	// Replicas of OVS to run
 	Replicas int32 `json:"replicas,omitempty"`
 
 	ExternalIDS OVSExternalIDs `json:"external-ids"`
 
 	ContainerImage string `json:"containerImage,omitempty"`
+
+	// +kubebuilder:validation:Optional
+	// +kubebuilder:default=false
+	HostNetwork bool `json:"hostNetwork"`
 
 	// +kubebuilder:validation:Optional
 	// Resources - Compute Resources required by this service (Limits/Requests).
