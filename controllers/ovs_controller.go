@@ -21,6 +21,7 @@ import (
 	"fmt"
 
 	"github.com/go-logr/logr"
+	netattdefv1 "github.com/k8snetworkplumbingwg/network-attachment-definition-client/pkg/apis/k8s.cni.cncf.io/v1"
 	k8s_errors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes"
@@ -68,6 +69,8 @@ func (r *OVSReconciler) GetLogger() logr.Logger {
 // +kubebuilder:rbac:groups=batch,resources=jobs,verbs=get;list;watch;create;patch;update;delete;
 // +kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;patch;update;delete;
 // +kubebuilder:rbac:groups=route.openshift.io,resources=routes,verbs=get;list;watch;create;update;patch;delete;
+// +kubebuilder:rbac:groups=k8s.cni.cncf.io,resources=*,verbs=*;
+// +kubebuilder:rbac:groups="",resources=pods;pods/status,verbs=get;update;
 
 // Reconcile - OVS
 func (r *OVSReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
@@ -147,6 +150,7 @@ func (r *OVSReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&batchv1.Job{}).
 		Owns(&corev1.Service{}).
 		Owns(&corev1.ConfigMap{}).
+		Owns(&netattdefv1.NetworkAttachmentDefinition{}).
 		Owns(&appsv1.Deployment{}).
 		Complete(r)
 }
@@ -254,6 +258,11 @@ func (r *OVSReconciler) reconcileNormal(ctx context.Context, instance *ovsv1alph
 		return ctrlResult, err
 	} else if (ctrlResult != ctrl.Result{}) {
 		return ctrlResult, nil
+	}
+
+	// Create additional Physical Network Attachements
+	if err := ovs.CreateAdditionalNetworks(instance, serviceLabels, ctx, r.Client); err != nil {
+		r.Log.Info(fmt.Sprintf("Failed to create additional networks: %s", err))
 	}
 
 	// Define a new Deployment object

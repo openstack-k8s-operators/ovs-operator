@@ -61,9 +61,10 @@ spec:
                 - ovn-remote
                 - system-id
                 type: object
-              hostNetwork:
-                default: false
-                type: boolean
+              nic_mappings:
+                additionalProperties:
+                  type: string
+                type: object
               nodeSelector:
                 additionalProperties:
                   type: string

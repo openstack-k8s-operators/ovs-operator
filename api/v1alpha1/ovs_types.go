@@ -38,8 +38,7 @@ type OVSSpec struct {
 	ContainerImage string `json:"containerImage,omitempty"`
 
 	// +kubebuilder:validation:Optional
-	// +kubebuilder:default=false
-	HostNetwork bool `json:"hostNetwork"`
+	NicMappings map[string]string `json:"nic_mappings,omitempty"`
 
 	// +kubebuilder:validation:Optional
 	// Resources - Compute Resources required by this service (Limits/Requests).

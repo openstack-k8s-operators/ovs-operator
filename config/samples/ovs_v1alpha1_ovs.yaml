@@ -12,4 +12,6 @@ spec:
     ovn-remote: "tcp:1.2.3.4:6442"
     ovn-encap-type: "geneve,vxlan"
     ovn-encap-ip: "10.20.30.40"
-  hostNetwork: false
+  nic_mappings:
+    physnet1: enp2s0.100
+    physnet2: enp2s0.200

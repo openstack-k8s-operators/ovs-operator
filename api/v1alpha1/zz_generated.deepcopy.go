@@ -104,6 +104,13 @@ func (in *OVSList) DeepCopyObject() runtime.Object {
 func (in *OVSSpec) DeepCopyInto(out *OVSSpec) {
 	*out = *in
 	out.ExternalIDS = in.ExternalIDS
+	if in.NicMappings != nil {
+		in, out := &in.NicMappings, &out.NicMappings
+		*out = make(map[string]string, len(*in))
+		for key, val := range *in {
+			(*out)[key] = val
+		}
+	}
 	in.Resources.DeepCopyInto(&out.Resources)
 	if in.NodeSelector != nil {
 		in, out := &in.NodeSelector, &out.NodeSelector

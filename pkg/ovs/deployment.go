@@ -13,6 +13,9 @@ limitations under the License.
 package ovs
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/openstack-k8s-operators/lib-common/modules/common"
 	"github.com/openstack-k8s-operators/lib-common/modules/common/affinity"
 	"github.com/openstack-k8s-operators/lib-common/modules/common/env"
@@ -22,6 +25,21 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
+
+func getNetworksList(
+	instance *v1alpha1.OVS,
+) string {
+	networks := "["
+	for phys_net := range instance.Spec.NicMappings {
+		networks += fmt.Sprintf(
+			`{"name": "%s", "namespace": "%s"},`,
+			phys_net, instance.Namespace,
+		)
+	}
+	networks = strings.TrimSuffix(networks, ",")
+	networks += "]"
+	return networks
+}
 
 // Deployment func
 func Deployment(
@@ -80,10 +98,12 @@ func Deployment(
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: labels,
+					Annotations: map[string]string{
+						"k8s.v1.cni.cncf.io/networks": getNetworksList(instance),
+					},
 				},
 				Spec: corev1.PodSpec{
 					ServiceAccountName: ServiceAccountName,
-					HostNetwork:        instance.Spec.HostNetwork,
 					Containers: []corev1.Container{
 						// ovsdb-server container
 						{
