@@ -71,6 +71,33 @@ func GetVolumes(name string) []corev1.Volume {
 				EmptyDir: &corev1.EmptyDirVolumeSource{},
 			},
 		},
+		{
+			Name: "var-run-ovn",
+			VolumeSource: corev1.VolumeSource{
+				//TODO (slaweq): it will probably need to be HostPath type but when I'm using it I got error like:
+				// Creating empty database /etc/openvswitch/conf.db ovsdb-tool: I/O error: /etc/openvswitch/conf.db: failed to lock lockfile (Resource temporarily unavailable)
+				// and containers aren't started
+				EmptyDir: &corev1.EmptyDirVolumeSource{},
+			},
+		},
+		{
+			Name: "var-log-ovn",
+			VolumeSource: corev1.VolumeSource{
+				//TODO (slaweq): it will probably need to be HostPath type but when I'm using it I got error like:
+				// Creating empty database /etc/openvswitch/conf.db ovsdb-tool: I/O error: /etc/openvswitch/conf.db: failed to lock lockfile (Resource temporarily unavailable)
+				// and containers aren't started
+				EmptyDir: &corev1.EmptyDirVolumeSource{},
+			},
+		},
+		{
+			Name: "var-lib-ovn",
+			VolumeSource: corev1.VolumeSource{
+				//TODO (slaweq): it will probably need to be HostPath type but when I'm using it I got error like:
+				// Creating empty database /etc/openvswitch/conf.db ovsdb-tool: I/O error: /etc/openvswitch/conf.db: failed to lock lockfile (Resource temporarily unavailable)
+				// and containers aren't started
+				EmptyDir: &corev1.EmptyDirVolumeSource{},
+			},
+		},
 	}
 
 }
@@ -140,5 +167,35 @@ func GetVswitchdVolumeMounts() []corev1.VolumeMount {
 			ReadOnly:  false,
 		},
 	}
+}
 
+// GetOvnVolumeMounts - ovn-controller VolumeMounts
+func GetOvnVolumeMounts() []corev1.VolumeMount {
+	return []corev1.VolumeMount{
+		{
+			Name:      "etc-machine-id",
+			MountPath: "/etc/machine-id",
+			ReadOnly:  true,
+		},
+		{
+			Name:      "etc-localtime",
+			MountPath: "/etc/localtime",
+			ReadOnly:  true,
+		},
+		{
+			Name:      "var-run-ovn",
+			MountPath: "/var/run/ovn",
+			ReadOnly:  false,
+		},
+		{
+			Name:      "var-log-ovn",
+			MountPath: "/var/log/ovn",
+			ReadOnly:  false,
+		},
+		{
+			Name:      "var-lib-ovn",
+			MountPath: "/var/lib/ovn",
+			ReadOnly:  false,
+		},
+	}
 }

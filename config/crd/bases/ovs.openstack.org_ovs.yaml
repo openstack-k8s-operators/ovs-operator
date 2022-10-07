@@ -35,8 +35,6 @@ spec:
           spec:
             description: OVSSpec defines the desired state of OVS
             properties:
-              containerImage:
-                type: string
               external-ids:
                 description: OVSExternalIDs is a set of configuration options for
                   OVS external-ids table
@@ -71,6 +69,10 @@ spec:
                 description: NodeSelector to target subset of worker nodes running
                   this service
                 type: object
+              ovnContainerImage:
+                type: string
+              ovsContainerImage:
+                type: string
               replicas:
                 default: 1
                 description: Replicas of OVS to run

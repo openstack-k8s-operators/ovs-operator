@@ -35,7 +35,9 @@ type OVSSpec struct {
 	// +kubebuilder:validation:Optional
 	ExternalIDS OVSExternalIDs `json:"external-ids"`
 
-	ContainerImage string `json:"containerImage,omitempty"`
+	OvsContainerImage string `json:"ovsContainerImage,omitempty"`
+
+	OvnContainerImage string `json:"ovnContainerImage,omitempty"`
 
 	// +kubebuilder:validation:Optional
 	NicMappings map[string]string `json:"nic_mappings,omitempty"`

@@ -113,7 +113,7 @@ func Deployment(
 								"ovsdb-server",
 							},
 							Args:  args,
-							Image: instance.Spec.ContainerImage,
+							Image: instance.Spec.OvsContainerImage,
 							SecurityContext: &corev1.SecurityContext{
 								Capabilities: &corev1.Capabilities{
 									Add:  []corev1.Capability{"NET_ADMIN", "SYS_ADMIN", "SYS_NICE"},
@@ -133,7 +133,7 @@ func Deployment(
 								"ovs-vswitchd",
 							},
 							Args:  args,
-							Image: instance.Spec.ContainerImage,
+							Image: instance.Spec.OvsContainerImage,
 							SecurityContext: &corev1.SecurityContext{
 								Capabilities: &corev1.Capabilities{
 									Add:  []corev1.Capability{"NET_ADMIN", "SYS_ADMIN", "SYS_NICE"},
@@ -145,8 +145,28 @@ func Deployment(
 							VolumeMounts:  GetVswitchdVolumeMounts(),
 							Resources:     instance.Spec.Resources,
 							LivenessProbe: ovsVswitchdLivenessProbe,
+						}, {
+							// ovn-controller container
+							Name: OvnControllerServiceName,
+							Command: []string{
+								"/usr/bin/ovn-controller",
+								"--pidfile",
+								"--log-file",
+								"unix:/run/openvswitch/db.sock",
+							},
+							Args:  []string{},
+							Image: instance.Spec.OvnContainerImage,
+							SecurityContext: &corev1.SecurityContext{
+								Capabilities: &corev1.Capabilities{
+									Add:  []corev1.Capability{"NET_ADMIN", "SYS_ADMIN", "SYS_NICE"},
+									Drop: []corev1.Capability{},
+								},
+								RunAsUser: &runAsUser,
+							},
+							Env:          env.MergeEnvs([]corev1.EnvVar{}, envVars),
+							VolumeMounts: GetOvnVolumeMounts(),
+							Resources:    instance.Spec.Resources,
 						},
-						// TODO(slaweq): ovn-controller container
 					},
 				},
 			},

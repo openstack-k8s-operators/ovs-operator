@@ -4,7 +4,8 @@ metadata:
   name: openvswitch
 spec:
   replicas: 1
-  containerImage: "quay.io/skaplons/ovs:latest"
+  ovsContainerImage: "quay.io/skaplons/ovs:latest"
+  ovnContainerImage: "quay.io/tripleovictoria/openstack-ovn-controller:current-tripleo"
   external-ids:
     system-id: "random"
     hostname: "devcontainer"
