@@ -32,6 +32,7 @@ type OVSSpec struct {
 	// Replicas of OVS to run
 	Replicas int32 `json:"replicas,omitempty"`
 
+	// +kubebuilder:validation:Optional
 	ExternalIDS OVSExternalIDs `json:"external-ids"`
 
 	ContainerImage string `json:"containerImage,omitempty"`
