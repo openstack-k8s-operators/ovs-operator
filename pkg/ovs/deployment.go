@@ -64,6 +64,7 @@ func Deployment(
 ) *appsv1.Deployment {
 
 	runAsUser := int64(0)
+	privileged := true
 	args := []string{}
 
 	//
@@ -139,7 +140,8 @@ func Deployment(
 									Add:  []corev1.Capability{"NET_ADMIN", "SYS_ADMIN", "SYS_NICE"},
 									Drop: []corev1.Capability{},
 								},
-								RunAsUser: &runAsUser,
+								RunAsUser:  &runAsUser,
+								Privileged: &privileged,
 							},
 							Env:           env.MergeEnvs([]corev1.EnvVar{}, envVars),
 							VolumeMounts:  GetOvsDbVolumeMounts(),
@@ -159,7 +161,8 @@ func Deployment(
 									Add:  []corev1.Capability{"NET_ADMIN", "SYS_ADMIN", "SYS_NICE"},
 									Drop: []corev1.Capability{},
 								},
-								RunAsUser: &runAsUser,
+								RunAsUser:  &runAsUser,
+								Privileged: &privileged,
 							},
 							Env:           env.MergeEnvs([]corev1.EnvVar{}, envVars),
 							VolumeMounts:  GetVswitchdVolumeMounts(),
@@ -181,7 +184,8 @@ func Deployment(
 									Add:  []corev1.Capability{"NET_ADMIN", "SYS_ADMIN", "SYS_NICE"},
 									Drop: []corev1.Capability{},
 								},
-								RunAsUser: &runAsUser,
+								RunAsUser:  &runAsUser,
+								Privileged: &privileged,
 							},
 							Env:          env.MergeEnvs([]corev1.EnvVar{}, envVars),
 							VolumeMounts: GetOvnVolumeMounts(),

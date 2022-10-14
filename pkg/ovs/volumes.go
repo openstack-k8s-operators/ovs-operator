@@ -19,6 +19,7 @@ func GetInitVolumeMounts() []corev1.VolumeMount {
 func GetVolumes(name string) []corev1.Volume {
 
 	var scriptsVolumeDefaultMode int32 = 0755
+	directoryOrCreate := corev1.HostPathDirectoryOrCreate
 
 	//source_type := corev1.HostPathDirectoryOrCreate
 	return []corev1.Volume{
@@ -41,64 +42,64 @@ func GetVolumes(name string) []corev1.Volume {
 		{
 			Name: "etc-ovs",
 			VolumeSource: corev1.VolumeSource{
-				//TODO (slaweq): it will probably need to be HostPath type but when I'm using it I got error like:
-				// Creating empty database /etc/openvswitch/conf.db ovsdb-tool: I/O error: /etc/openvswitch/conf.db: failed to lock lockfile (Resource temporarily unavailable)
-				// and containers aren't started
-				EmptyDir: &corev1.EmptyDirVolumeSource{},
+				HostPath: &corev1.HostPathVolumeSource{
+					Path: "/var/home/core/openstack/etc/ovs",
+					Type: &directoryOrCreate,
+				},
 			},
 		},
 		{
 			Name: "var-run",
 			VolumeSource: corev1.VolumeSource{
-				//TODO (slaweq): it will probably need to be HostPath type but when I'm using it I got error like:
-				// Creating empty database /etc/openvswitch/conf.db ovsdb-tool: I/O error: /etc/openvswitch/conf.db: failed to lock lockfile (Resource temporarily unavailable)
-				// and containers aren't started
-				EmptyDir: &corev1.EmptyDirVolumeSource{},
+				HostPath: &corev1.HostPathVolumeSource{
+					Path: "/var/home/core/openstack/var/run/openvswitch",
+					Type: &directoryOrCreate,
+				},
 			},
 		},
 		{
 			Name: "var-log",
 			VolumeSource: corev1.VolumeSource{
-				//TODO (slaweq): it will probably need to be HostPath type but when I'm using it I got error like:
-				// Creating empty database /etc/openvswitch/conf.db ovsdb-tool: I/O error: /etc/openvswitch/conf.db: failed to lock lockfile (Resource temporarily unavailable)
-				// and containers aren't started
-				EmptyDir: &corev1.EmptyDirVolumeSource{},
+				HostPath: &corev1.HostPathVolumeSource{
+					Path: "/var/home/core/openstack/var/log/openvswitch",
+					Type: &directoryOrCreate,
+				},
 			},
 		},
 		{
 			Name: "var-lib",
 			VolumeSource: corev1.VolumeSource{
-				//TODO (slaweq): it will probably need to be HostPath type but when I'm using it I got error like:
-				// Creating empty database /etc/openvswitch/conf.db ovsdb-tool: I/O error: /etc/openvswitch/conf.db: failed to lock lockfile (Resource temporarily unavailable)
-				// and containers aren't started
-				EmptyDir: &corev1.EmptyDirVolumeSource{},
+				HostPath: &corev1.HostPathVolumeSource{
+					Path: "/var/home/core/openstack/var/lib/openvswitch",
+					Type: &directoryOrCreate,
+				},
 			},
 		},
 		{
 			Name: "var-run-ovn",
 			VolumeSource: corev1.VolumeSource{
-				//TODO (slaweq): it will probably need to be HostPath type but when I'm using it I got error like:
-				// Creating empty database /etc/openvswitch/conf.db ovsdb-tool: I/O error: /etc/openvswitch/conf.db: failed to lock lockfile (Resource temporarily unavailable)
-				// and containers aren't started
-				EmptyDir: &corev1.EmptyDirVolumeSource{},
+				HostPath: &corev1.HostPathVolumeSource{
+					Path: "/var/home/core/openstack/var/run/ovn",
+					Type: &directoryOrCreate,
+				},
 			},
 		},
 		{
 			Name: "var-log-ovn",
 			VolumeSource: corev1.VolumeSource{
-				//TODO (slaweq): it will probably need to be HostPath type but when I'm using it I got error like:
-				// Creating empty database /etc/openvswitch/conf.db ovsdb-tool: I/O error: /etc/openvswitch/conf.db: failed to lock lockfile (Resource temporarily unavailable)
-				// and containers aren't started
-				EmptyDir: &corev1.EmptyDirVolumeSource{},
+				HostPath: &corev1.HostPathVolumeSource{
+					Path: "/var/home/core/openstack/var/log/ovn",
+					Type: &directoryOrCreate,
+				},
 			},
 		},
 		{
 			Name: "var-lib-ovn",
 			VolumeSource: corev1.VolumeSource{
-				//TODO (slaweq): it will probably need to be HostPath type but when I'm using it I got error like:
-				// Creating empty database /etc/openvswitch/conf.db ovsdb-tool: I/O error: /etc/openvswitch/conf.db: failed to lock lockfile (Resource temporarily unavailable)
-				// and containers aren't started
-				EmptyDir: &corev1.EmptyDirVolumeSource{},
+				HostPath: &corev1.HostPathVolumeSource{
+					Path: "/var/home/core/openstack/var/lib/ovn",
+					Type: &directoryOrCreate,
+				},
 			},
 		},
 		{
