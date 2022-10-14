@@ -39,6 +39,8 @@ spec:
                 description: OVSExternalIDs is a set of configuration options for
                   OVS external-ids table
                 properties:
+                  enable-chassis-as-gateway:
+                    type: boolean
                   hostname:
                     type: string
                   ovn-bridge:
@@ -52,6 +54,7 @@ spec:
                   system-id:
                     type: string
                 required:
+                - enable-chassis-as-gateway
                 - hostname
                 - ovn-bridge
                 - ovn-encap-ip
