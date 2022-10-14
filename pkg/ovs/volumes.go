@@ -17,6 +17,9 @@ func GetInitVolumeMounts() []corev1.VolumeMount {
 // TODO: merge to GetVolumes when other controllers also switched to current config
 //       mechanism.
 func GetVolumes(name string) []corev1.Volume {
+
+	var scriptsVolumeDefaultMode int32 = 0755
+
 	//source_type := corev1.HostPathDirectoryOrCreate
 	return []corev1.Volume{
 		{
@@ -96,6 +99,17 @@ func GetVolumes(name string) []corev1.Volume {
 				// Creating empty database /etc/openvswitch/conf.db ovsdb-tool: I/O error: /etc/openvswitch/conf.db: failed to lock lockfile (Resource temporarily unavailable)
 				// and containers aren't started
 				EmptyDir: &corev1.EmptyDirVolumeSource{},
+			},
+		},
+		{
+			Name: "scripts",
+			VolumeSource: corev1.VolumeSource{
+				ConfigMap: &corev1.ConfigMapVolumeSource{
+					DefaultMode: &scriptsVolumeDefaultMode,
+					LocalObjectReference: corev1.LocalObjectReference{
+						Name: name + "-scripts",
+					},
+				},
 			},
 		},
 	}
@@ -183,6 +197,11 @@ func GetOvnVolumeMounts() []corev1.VolumeMount {
 			ReadOnly:  true,
 		},
 		{
+			Name:      "var-run",
+			MountPath: "/var/run/openvswitch",
+			ReadOnly:  false,
+		},
+		{
 			Name:      "var-run-ovn",
 			MountPath: "/var/run/ovn",
 			ReadOnly:  false,
@@ -196,6 +215,11 @@ func GetOvnVolumeMounts() []corev1.VolumeMount {
 			Name:      "var-lib-ovn",
 			MountPath: "/var/lib/ovn",
 			ReadOnly:  false,
+		},
+		{
+			Name:      "scripts",
+			MountPath: "/usr/local/bin/container-scripts",
+			ReadOnly:  true,
 		},
 	}
 }

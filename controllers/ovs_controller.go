@@ -31,9 +31,11 @@ import (
 
 	"github.com/openstack-k8s-operators/lib-common/modules/common"
 	"github.com/openstack-k8s-operators/lib-common/modules/common/condition"
+	"github.com/openstack-k8s-operators/lib-common/modules/common/configmap"
 	"github.com/openstack-k8s-operators/lib-common/modules/common/deployment"
 	"github.com/openstack-k8s-operators/lib-common/modules/common/env"
 	"github.com/openstack-k8s-operators/lib-common/modules/common/helper"
+	"github.com/openstack-k8s-operators/lib-common/modules/common/labels"
 	"github.com/openstack-k8s-operators/lib-common/modules/common/util"
 	ovsv1alpha1 "github.com/openstack-k8s-operators/ovs-operator/api/v1alpha1"
 	"github.com/openstack-k8s-operators/ovs-operator/pkg/ovs"
@@ -212,6 +214,21 @@ func (r *OVSReconciler) reconcileNormal(ctx context.Context, instance *ovsv1alph
 	instance.Status.Conditions.MarkTrue(condition.InputReadyCondition, condition.InputReadyMessage)
 
 	//
+	// create Configmap required for neutron input
+	// - %-scripts configmap holding scripts to e.g. bootstrap the service
+	//
+	err := r.generateServiceConfigMaps(ctx, helper, instance, &configMapVars)
+	if err != nil {
+		instance.Status.Conditions.Set(condition.FalseCondition(
+			condition.ServiceConfigReadyCondition,
+			condition.ErrorReason,
+			condition.SeverityWarning,
+			condition.ServiceConfigReadyErrorMessage,
+			err.Error()))
+		return ctrl.Result{}, err
+	}
+
+	//
 	// create hash over all the different input resources to identify if any those changed
 	// and a restart/recreate is required.
 	//
@@ -299,6 +316,36 @@ func (r *OVSReconciler) reconcileNormal(ctx context.Context, instance *ovsv1alph
 	r.Log.Info("Reconciled Service successfully")
 
 	return ctrl.Result{}, nil
+}
+
+//
+// generateServiceConfigMaps - create create configmaps which hold scripts and service configuration
+//
+func (r *OVSReconciler) generateServiceConfigMaps(
+	ctx context.Context,
+	h *helper.Helper,
+	instance *ovsv1alpha1.OVS,
+	envVars *map[string]env.Setter,
+) error {
+	// Create/update configmaps from templates
+	cmLabels := labels.GetLabels(instance, labels.GetGroupLabel(ovs.ServiceName), map[string]string{})
+
+	cms := []util.Template{
+		// ScriptsConfigMap
+		{
+			Name:               fmt.Sprintf("%s-scripts", instance.Name),
+			Namespace:          instance.Namespace,
+			Type:               util.TemplateTypeScripts,
+			InstanceType:       instance.Kind,
+			AdditionalTemplate: map[string]string{"init.sh": "/bin/init.sh"},
+			Labels:             cmLabels,
+		},
+	}
+	err := configmap.EnsureConfigMaps(ctx, h, instance, cms, envVars)
+	if err != nil {
+		return nil
+	}
+	return nil
 }
 
 //

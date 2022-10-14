@@ -33,38 +33,38 @@ func CreateAdditionalNetworks(
 
 	var nad *netattdefv1.NetworkAttachmentDefinition
 
-	for phys_net, interfaceName := range instance.Spec.NicMappings {
+	for physNet, interfaceName := range instance.Spec.NicMappings {
 		nad = &netattdefv1.NetworkAttachmentDefinition{}
 		err := k8sClient.Get(
 			ctx,
 			client.ObjectKey{
 				Namespace: instance.Namespace,
-				Name:      phys_net,
+				Name:      physNet,
 			},
 			nad,
 		)
 		if err != nil {
 			if !k8s_errors.IsNotFound(err) {
 				return fmt.Errorf("can not get NetworkAttachmentDefinition %s/%s: %w",
-					phys_net, interfaceName, err)
+					physNet, interfaceName, err)
 			}
 
 			nad = &netattdefv1.NetworkAttachmentDefinition{
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      phys_net,
+					Name:      physNet,
 					Namespace: instance.Namespace,
 					Labels:    labels,
 				},
 				Spec: netattdefv1.NetworkAttachmentDefinitionSpec{
 					Config: fmt.Sprintf(
 						`{"cniVersion": "0.3.1", "name": "%s", "type": "host-device", "device": "%s"}`,
-						phys_net, interfaceName),
+						physNet, interfaceName),
 				},
 			}
 			// Request object not found, lets create it
 			if err := k8sClient.Create(ctx, nad); err != nil {
 				return fmt.Errorf("can not create NetworkAttachmentDefinition %s/%s: %w",
-					phys_net, interfaceName, err)
+					physNet, interfaceName, err)
 			}
 		}
 	}

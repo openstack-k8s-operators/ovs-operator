@@ -16,12 +16,47 @@
 set -ex
 
 # Configs are obtained from ENV variables.
-export OvnBridge=${OvnBridge:-"br-int"}
-export OvnRemote=${OvnRemote:-"tcp:127.0.0.1:6642"}
-export OvnEncapType=${OvnEncapType:-"geneve"}
-export OvnEncapIP=${OvnEncapIP:-"127.0.0.1"}
+OvnBridge=${OvnBridge:-"br-int"}
+OvnRemote=${OvnRemote:-"tcp:127.0.0.1:6642"}
+OvnEncapType=${OvnEncapType:-"geneve"}
+OvnEncapIP=${OvnEncapIP:-"127.0.0.1"}
+EnableChassisAsGateway=${EnableChassisAsGateway:-false}
+PhysicalNetworks=${PhysicalNetworks:-""}
+
+while true; do
+    /usr/bin/ovs-vsctl show
+    if [ $? -eq 0 ]; then
+        break
+    else
+        echo "Ovsdb-server seems not be ready yet. Waiting..."
+        sleep 1
+    fi
+done
 
 # configure external-ids in OVS
+ovs-vsctl set open . external-ids:ovn-bridge=${OvnBridge}
 ovs-vsctl set open . external-ids:ovn-remote=${OvnRemote}
 ovs-vsctl set open . external-ids:ovn-encap-type=${OvnEncapType}
 ovs-vsctl set open . external-ids:ovn-encap-ip=${OvnEncapIP}
+if [ "$EnableChassisAsGateway" == "true" ]; then
+    ovs-vsctl set open . external-ids:ovn-cms-options=enable-chassis-as-gw
+fi
+
+# Configure bridge mappings and physical bridges
+OvnBridgeMappings=""
+net_number=1
+for physicalNetwork in ${PhysicalNetworks}; do
+    br_name="br-${physicalNetwork}"
+    ovs-vsctl --may-exist add-br ${br_name}
+    ovs-vsctl --may-exist add-port ${br_name} net${net_number}
+    net_number=$(( net_number+1 ))
+    bridgeMapping="${physicalNetwork}:${br_name}"
+    if [ -z "$OvnBridgeMappings"]; then
+        OvnBridgeMappings=$bridgeMapping
+    else
+        OvnBridgeMappings="${OvnBridgeMappings},${bridgeMapping}"
+    fi
+done
+if [ -n "$OvnBridgeMappings" ]; then
+    ovs-vsctl set open . external-ids:ovn-bridge-mappings=${OvnBridgeMappings}
+fi

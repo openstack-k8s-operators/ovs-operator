@@ -41,6 +41,21 @@ func getNetworksList(
 	return networks
 }
 
+func getPhysicalNetworks(
+	instance *v1alpha1.OVS,
+) string {
+	physNets := ""
+	for physNet := range instance.Spec.NicMappings {
+		// NOTE(slaweq): to make things easier, each physical bridge will have
+		//               the same name as "br-<physical network>"
+		// NOTE(slaweq): interface names aren't important as inside Pod they will have
+		//               names like "net1, net2..." so only order is important really
+		physNets += fmt.Sprintf("%s ", physNet)
+	}
+	physNets = strings.TrimSuffix(physNets, ",")
+	return physNets
+}
+
 // Deployment func
 func Deployment(
 	instance *v1alpha1.OVS,
@@ -83,8 +98,13 @@ func Deployment(
 	envVars["KOLLA_CONFIG_FILE"] = env.SetValue(KollaConfigAPI)
 	envVars["KOLLA_CONFIG_STRATEGY"] = env.SetValue("COPY_ALWAYS")
 	envVars["CONFIG_HASH"] = env.SetValue(configHash)
+	envVars["OvnBridge"] = env.SetValue(instance.Spec.ExternalIDS.OvnBridge)
+	envVars["OvnRemote"] = env.SetValue(instance.Spec.ExternalIDS.OvnRemote)
+	envVars["OvnEncapType"] = env.SetValue(instance.Spec.ExternalIDS.OvnEncapType)
+	envVars["OvnEncapIP"] = env.SetValue(instance.Spec.ExternalIDS.OvnEncapIP)
+	envVars["EnableChassisAsGateway"] = env.SetValue(fmt.Sprintf("%t", instance.Spec.ExternalIDS.EnableChassisAsGateway))
+	envVars["PhysicalNetworks"] = env.SetValue(getPhysicalNetworks(instance))
 
-	//TODO(slaweq): here I need to define 3 containers
 	deployment := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      ServiceName,
@@ -149,12 +169,12 @@ func Deployment(
 							// ovn-controller container
 							Name: OvnControllerServiceName,
 							Command: []string{
-								"/usr/bin/ovn-controller",
-								"--pidfile",
-								"--log-file",
-								"unix:/run/openvswitch/db.sock",
+								"/bin/bash", "-c",
 							},
-							Args:  []string{},
+							Args: []string{
+								// First configure external ids
+								"/usr/local/bin/container-scripts/init.sh && /usr/bin/ovn-controller --pidfile --log-file unix:/run/openvswitch/db.sock",
+							},
 							Image: instance.Spec.OvnContainerImage,
 							SecurityContext: &corev1.SecurityContext{
 								Capabilities: &corev1.Capabilities{
