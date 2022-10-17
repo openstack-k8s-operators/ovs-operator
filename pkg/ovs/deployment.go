@@ -211,18 +211,6 @@ func Deployment(
 		deployment.Spec.Template.Spec.NodeSelector = instance.Spec.NodeSelector
 	}
 
-	// TODO(slaweq): Do I really need InitContainer? Maybe this can be done somehow differently?
-	/* initContainerDetails := InitContainer{
-		ContainerImage: instance.Spec.ContainerImage,
-		Hostname:       instance.Spec.ExternalIDS.Hostname,
-		OvnBridge:      instance.Spec.ExternalIDS.OvnBridge,
-		OvnRemote:      instance.Spec.ExternalIDS.OvnRemote,
-		OvnEncapType:   instance.Spec.ExternalIDS.OvnEncapType,
-		OvnEncapIP:     instance.Spec.ExternalIDS.OvnEncapIP,
-		VolumeMounts:   GetInitVolumeMounts(),
-	}
-	deployment.Spec.Template.Spec.InitContainers = GetInitContainer(initContainerDetails) */
-
 	return deployment
 
 }

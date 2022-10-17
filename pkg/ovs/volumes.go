@@ -4,15 +4,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
-/*
-NOTE(slaweq): this is used only for InitContainer, so maybe we don't need it here
-// GetInitVolumeMounts -
-func GetInitVolumeMounts() []corev1.VolumeMount {
-	return []corev1.VolumeMount{}
-
-}
-*/
-
 // GetVolumes -
 // TODO: merge to GetVolumes when other controllers also switched to current config
 //       mechanism.
