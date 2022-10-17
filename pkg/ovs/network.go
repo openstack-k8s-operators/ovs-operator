@@ -21,11 +21,11 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/openstack-k8s-operators/ovs-operator/api/v1alpha1"
+	"github.com/openstack-k8s-operators/ovs-operator/api/v1beta1"
 )
 
 func CreateAdditionalNetworks(
-	instance *v1alpha1.OVS,
+	instance *v1beta1.OVS,
 	labels map[string]string,
 	ctx context.Context,
 	k8sClient client.Client,

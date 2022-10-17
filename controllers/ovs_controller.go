@@ -37,7 +37,7 @@ import (
 	"github.com/openstack-k8s-operators/lib-common/modules/common/helper"
 	"github.com/openstack-k8s-operators/lib-common/modules/common/labels"
 	"github.com/openstack-k8s-operators/lib-common/modules/common/util"
-	ovsv1alpha1 "github.com/openstack-k8s-operators/ovs-operator/api/v1alpha1"
+	ovsv1beta1 "github.com/openstack-k8s-operators/ovs-operator/api/v1beta1"
 	"github.com/openstack-k8s-operators/ovs-operator/pkg/ovs"
 	appsv1 "k8s.io/api/apps/v1"
 	batchv1 "k8s.io/api/batch/v1"
@@ -80,7 +80,7 @@ func (r *OVSReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.R
 	_ = r.Log.WithValues("ovs", req.NamespacedName)
 
 	// Fetch ovs instance
-	instance := &ovsv1alpha1.OVS{}
+	instance := &ovsv1beta1.OVS{}
 	err := r.Client.Get(ctx, req.NamespacedName, instance)
 	if err != nil {
 		if k8s_errors.IsNotFound(err) {
@@ -148,7 +148,7 @@ func (r *OVSReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.R
 // SetupWithManager sets up the controller with the Manager.
 func (r *OVSReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&ovsv1alpha1.OVS{}).
+		For(&ovsv1beta1.OVS{}).
 		Owns(&batchv1.Job{}).
 		Owns(&corev1.Service{}).
 		Owns(&corev1.ConfigMap{}).
@@ -157,7 +157,7 @@ func (r *OVSReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-func (r *OVSReconciler) reconcileDelete(ctx context.Context, instance *ovsv1alpha1.OVS, helper *helper.Helper) (ctrl.Result, error) {
+func (r *OVSReconciler) reconcileDelete(ctx context.Context, instance *ovsv1beta1.OVS, helper *helper.Helper) (ctrl.Result, error) {
 	r.Log.Info("Reconciling Service delete")
 
 	// Service is deleted so remove the finalizer.
@@ -172,7 +172,7 @@ func (r *OVSReconciler) reconcileDelete(ctx context.Context, instance *ovsv1alph
 
 func (r *OVSReconciler) reconcileInit(
 	ctx context.Context,
-	instance *ovsv1alpha1.OVS,
+	instance *ovsv1beta1.OVS,
 	helper *helper.Helper,
 ) (ctrl.Result, error) {
 	r.Log.Info("Reconciling Service init")
@@ -184,21 +184,21 @@ func (r *OVSReconciler) reconcileInit(
 	return ctrl.Result{}, nil
 }
 
-func (r *OVSReconciler) reconcileUpdate(ctx context.Context, instance *ovsv1alpha1.OVS, helper *helper.Helper) (ctrl.Result, error) {
+func (r *OVSReconciler) reconcileUpdate(ctx context.Context, instance *ovsv1beta1.OVS, helper *helper.Helper) (ctrl.Result, error) {
 	r.Log.Info("Reconciling Service update")
 
 	r.Log.Info("Reconciled Service update successfully")
 	return ctrl.Result{}, nil
 }
 
-func (r *OVSReconciler) reconcileUpgrade(ctx context.Context, instance *ovsv1alpha1.OVS, helper *helper.Helper) (ctrl.Result, error) {
+func (r *OVSReconciler) reconcileUpgrade(ctx context.Context, instance *ovsv1beta1.OVS, helper *helper.Helper) (ctrl.Result, error) {
 	r.Log.Info("Reconciling Service upgrade")
 
 	r.Log.Info("Reconciled Service upgrade successfully")
 	return ctrl.Result{}, nil
 }
 
-func (r *OVSReconciler) reconcileNormal(ctx context.Context, instance *ovsv1alpha1.OVS, helper *helper.Helper) (ctrl.Result, error) {
+func (r *OVSReconciler) reconcileNormal(ctx context.Context, instance *ovsv1beta1.OVS, helper *helper.Helper) (ctrl.Result, error) {
 	r.Log.Info("Reconciling Service")
 
 	// If the service object doesn't have our finalizer, add it.
@@ -324,7 +324,7 @@ func (r *OVSReconciler) reconcileNormal(ctx context.Context, instance *ovsv1alph
 func (r *OVSReconciler) generateServiceConfigMaps(
 	ctx context.Context,
 	h *helper.Helper,
-	instance *ovsv1alpha1.OVS,
+	instance *ovsv1beta1.OVS,
 	envVars *map[string]env.Setter,
 ) error {
 	// Create/update configmaps from templates
@@ -354,7 +354,7 @@ func (r *OVSReconciler) generateServiceConfigMaps(
 //
 func (r *OVSReconciler) createHashOfInputHashes(
 	ctx context.Context,
-	instance *ovsv1alpha1.OVS,
+	instance *ovsv1beta1.OVS,
 	envVars map[string]env.Setter,
 ) (string, error) {
 	mergedMapVars := env.MergeEnvs([]corev1.EnvVar{}, envVars)

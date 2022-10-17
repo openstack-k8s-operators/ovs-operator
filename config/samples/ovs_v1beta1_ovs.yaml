@@ -1,4 +1,4 @@
-apiVersion: ovs.openstack.org/v1alpha1
+apiVersion: ovs.openstack.org/v1beta1
 kind: OVS
 metadata:
   name: openvswitch
@@ -13,6 +13,7 @@ spec:
     ovn-remote: "tcp:1.2.3.4:6442"
     ovn-encap-type: "geneve,vxlan"
     ovn-encap-ip: "10.20.30.40"
+    enable-chassis-as-gateway: false
   nic_mappings:
     physnet1: enp2s0.100
     physnet2: enp2s0.200

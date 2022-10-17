@@ -34,7 +34,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	ovsv1alpha1 "github.com/openstack-k8s-operators/ovs-operator/api/v1alpha1"
+	ovsv1beta1 "github.com/openstack-k8s-operators/ovs-operator/api/v1beta1"
 	"github.com/openstack-k8s-operators/ovs-operator/controllers"
 	//+kubebuilder:scaffold:imports
 )
@@ -47,7 +47,7 @@ var (
 func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 
-	utilruntime.Must(ovsv1alpha1.AddToScheme(scheme))
+	utilruntime.Must(ovsv1beta1.AddToScheme(scheme))
 
 	utilruntime.Must(netattdefv1.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme

@@ -19,7 +19,7 @@ import (
 	"github.com/openstack-k8s-operators/lib-common/modules/common"
 	"github.com/openstack-k8s-operators/lib-common/modules/common/affinity"
 	"github.com/openstack-k8s-operators/lib-common/modules/common/env"
-	"github.com/openstack-k8s-operators/ovs-operator/api/v1alpha1"
+	"github.com/openstack-k8s-operators/ovs-operator/api/v1beta1"
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -27,7 +27,7 @@ import (
 )
 
 func getNetworksList(
-	instance *v1alpha1.OVS,
+	instance *v1beta1.OVS,
 ) string {
 	networks := "["
 	for phys_net := range instance.Spec.NicMappings {
@@ -42,7 +42,7 @@ func getNetworksList(
 }
 
 func getPhysicalNetworks(
-	instance *v1alpha1.OVS,
+	instance *v1beta1.OVS,
 ) string {
 	physNets := ""
 	for physNet := range instance.Spec.NicMappings {
@@ -58,7 +58,7 @@ func getPhysicalNetworks(
 
 // Deployment func
 func Deployment(
-	instance *v1alpha1.OVS,
+	instance *v1beta1.OVS,
 	configHash string,
 	labels map[string]string,
 ) *appsv1.Deployment {

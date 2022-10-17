@@ -15,18 +15,18 @@ spec:
       displayName: OVS vswitchd
       kind: OVSvswitchd
       name: vswitchd.ovs.openstack.org
-      version: v1alpha1
+      version: v1beta1
     - description: OVSDBServer represents the storage and network identity of an ovsdb-server.
         It is the Schema for the ovsdbservers API.
       displayName: OVSDBServer
       kind: OVSDBServer
       name: ovsdbservers.ovs.openstack.org
-      version: v1alpha1
+      version: v1beta1
     - description: OVS is the Schema for the ovs API
       displayName: OVS
       kind: OVS
       name: ovs.ovs.openstack.org
-      version: v1alpha1
+      version: v1beta1
   description: Deploy and manage OVS vswichd and ovs database.
   displayName: OVS Operator
   icon:
