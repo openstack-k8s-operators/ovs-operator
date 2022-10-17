@@ -30,10 +30,10 @@ func getNetworksList(
 	instance *v1beta1.OVS,
 ) string {
 	networks := "["
-	for phys_net := range instance.Spec.NicMappings {
+	for physNet := range instance.Spec.NicMappings {
 		networks += fmt.Sprintf(
 			`{"name": "%s", "namespace": "%s"},`,
-			phys_net, instance.Namespace,
+			physNet, instance.Namespace,
 		)
 	}
 	networks = strings.TrimSuffix(networks, ",")

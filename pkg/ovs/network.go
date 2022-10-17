@@ -24,10 +24,11 @@ import (
 	"github.com/openstack-k8s-operators/ovs-operator/api/v1beta1"
 )
 
+// CreateAdditionalNetworks - creates network attachement definitions based on the provided mappings
 func CreateAdditionalNetworks(
+	ctx context.Context,
 	instance *v1beta1.OVS,
 	labels map[string]string,
-	ctx context.Context,
 	k8sClient client.Client,
 ) error {
 

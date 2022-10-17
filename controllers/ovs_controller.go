@@ -278,7 +278,7 @@ func (r *OVSReconciler) reconcileNormal(ctx context.Context, instance *ovsv1beta
 	}
 
 	// Create additional Physical Network Attachements
-	if err := ovs.CreateAdditionalNetworks(instance, serviceLabels, ctx, r.Client); err != nil {
+	if err := ovs.CreateAdditionalNetworks(ctx, instance, serviceLabels, r.Client); err != nil {
 		r.Log.Info(fmt.Sprintf("Failed to create additional networks: %s", err))
 	}
 
