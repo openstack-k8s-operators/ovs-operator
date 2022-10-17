@@ -5,8 +5,6 @@ import (
 )
 
 // GetVolumes -
-// TODO: merge to GetVolumes when other controllers also switched to current config
-//       mechanism.
 func GetVolumes(name string) []corev1.Volume {
 
 	var scriptsVolumeDefaultMode int32 = 0755

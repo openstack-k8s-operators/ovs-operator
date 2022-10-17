@@ -65,7 +65,6 @@ func Deployment(
 
 	runAsUser := int64(0)
 	privileged := true
-	args := []string{}
 
 	//
 	// https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
@@ -131,9 +130,10 @@ func Deployment(
 							Name: ServiceName + "db-server",
 							Command: []string{
 								"/usr/bin/start-ovs",
+							},
+							Args: []string{
 								"ovsdb-server",
 							},
-							Args:  args,
 							Image: instance.Spec.OvsContainerImage,
 							SecurityContext: &corev1.SecurityContext{
 								Capabilities: &corev1.Capabilities{
@@ -152,9 +152,10 @@ func Deployment(
 							Name: ServiceName + "-vswitchd",
 							Command: []string{
 								"/usr/bin/start-ovs",
+							},
+							Args: []string{
 								"ovs-vswitchd",
 							},
-							Args:  args,
 							Image: instance.Spec.OvsContainerImage,
 							SecurityContext: &corev1.SecurityContext{
 								Capabilities: &corev1.Capabilities{
@@ -175,7 +176,7 @@ func Deployment(
 								"/bin/bash", "-c",
 							},
 							Args: []string{
-								// First configure external ids
+								// First configure external ids and then start ovn controller
 								"/usr/local/bin/container-scripts/init.sh && /usr/bin/ovn-controller --pidfile --log-file unix:/run/openvswitch/db.sock",
 							},
 							Image: instance.Spec.OvnContainerImage,

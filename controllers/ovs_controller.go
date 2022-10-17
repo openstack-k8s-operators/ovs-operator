@@ -93,8 +93,6 @@ func (r *OVSReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.R
 		return ctrl.Result{}, err
 	}
 
-	// TODO(slaweq): here almost all logic is still needed but seems like something is at least starting already :)
-
 	//
 	// initialize status
 	//
