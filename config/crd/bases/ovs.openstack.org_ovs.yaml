@@ -157,13 +157,18 @@ spec:
                   - type
                   type: object
                 type: array
+              desiredNumberScheduled:
+                description: DesiredNumberScheduled - total number of the nodes which
+                  should be running Daemon
+                format: int32
+                type: integer
               hash:
                 additionalProperties:
                   type: string
                 description: Map of hashes to track e.g. job status
                 type: object
-              readyCount:
-                description: ReadyCount of the ovs instances
+              numberReady:
+                description: NumberReady of the ovs instances
                 format: int32
                 type: integer
             type: object

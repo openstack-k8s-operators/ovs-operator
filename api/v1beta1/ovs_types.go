@@ -54,8 +54,11 @@ type OVSSpec struct {
 
 // OVSStatus defines the observed state of OVS
 type OVSStatus struct {
-	// ReadyCount of the ovs instances
-	ReadyCount int32 `json:"readyCount,omitempty"`
+	// NumberReady of the ovs instances
+	NumberReady int32 `json:"numberReady,omitempty"`
+
+	// DesiredNumberScheduled - total number of the nodes which should be running Daemon
+	DesiredNumberScheduled int32 `json:"desiredNumberScheduled,omitempty"`
 
 	// Conditions
 	Conditions condition.Conditions `json:"conditions,omitempty" optional:"true"`
@@ -93,7 +96,7 @@ func init() {
 func (instance OVS) IsReady() bool {
 	// Ready when:
 	// there is at least a single pod to running OVS and ovn-controller
-	return instance.Status.ReadyCount >= 1
+	return instance.Status.NumberReady == instance.Status.DesiredNumberScheduled
 }
 
 // OVSExternalIDs is a set of configuration options for OVS external-ids table

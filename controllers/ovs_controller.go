@@ -32,7 +32,7 @@ import (
 	"github.com/openstack-k8s-operators/lib-common/modules/common"
 	"github.com/openstack-k8s-operators/lib-common/modules/common/condition"
 	"github.com/openstack-k8s-operators/lib-common/modules/common/configmap"
-	"github.com/openstack-k8s-operators/lib-common/modules/common/deployment"
+	"github.com/openstack-k8s-operators/lib-common/modules/common/daemonset"
 	"github.com/openstack-k8s-operators/lib-common/modules/common/env"
 	"github.com/openstack-k8s-operators/lib-common/modules/common/helper"
 	"github.com/openstack-k8s-operators/lib-common/modules/common/labels"
@@ -69,7 +69,6 @@ func (r *OVSReconciler) GetLogger() logr.Logger {
 // +kubebuilder:rbac:groups=core,resources=configmaps,verbs=get;list;watch;create;update;patch;delete;
 // +kubebuilder:rbac:groups=core,resources=services,verbs=get;list;watch;create;patch;update;delete;
 // +kubebuilder:rbac:groups=batch,resources=jobs,verbs=get;list;watch;create;patch;update;delete;
-// +kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;patch;update;delete;
 // +kubebuilder:rbac:groups=route.openshift.io,resources=routes,verbs=get;list;watch;create;update;patch;delete;
 // +kubebuilder:rbac:groups=k8s.cni.cncf.io,resources=*,verbs=*;
 // +kubebuilder:rbac:groups="",resources=pods;pods/status,verbs=get;update;
@@ -151,7 +150,7 @@ func (r *OVSReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&corev1.Service{}).
 		Owns(&corev1.ConfigMap{}).
 		Owns(&netattdefv1.NetworkAttachmentDefinition{}).
-		Owns(&appsv1.Deployment{}).
+		Owns(&appsv1.DaemonSet{}).
 		Complete(r)
 }
 
@@ -280,13 +279,13 @@ func (r *OVSReconciler) reconcileNormal(ctx context.Context, instance *ovsv1beta
 		r.Log.Info(fmt.Sprintf("Failed to create additional networks: %s", err))
 	}
 
-	// Define a new Deployment object
-	depl := deployment.NewDeployment(
-		ovs.Deployment(instance, inputHash, serviceLabels),
+	// Define a new DaemonSet object
+	dset := daemonset.NewDaemonSet(
+		ovs.DaemonSet(instance, inputHash, serviceLabels),
 		5,
 	)
 
-	ctrlResult, err = depl.CreateOrPatch(ctx, helper)
+	ctrlResult, err = dset.CreateOrPatch(ctx, helper)
 	if err != nil {
 		instance.Status.Conditions.Set(condition.FalseCondition(
 			condition.DeploymentReadyCondition,
@@ -304,12 +303,12 @@ func (r *OVSReconciler) reconcileNormal(ctx context.Context, instance *ovsv1beta
 		return ctrlResult, nil
 	}
 
-	instance.Status.ReadyCount = depl.GetDeployment().Status.ReadyReplicas
+	instance.Status.NumberReady = dset.GetDaemonSet().Status.NumberReady
 
-	if instance.Status.ReadyCount > 0 {
+	if instance.IsReady() {
 		instance.Status.Conditions.MarkTrue(condition.DeploymentReadyCondition, condition.DeploymentReadyMessage)
 	}
-	// create Deployment - end
+	// create DaemonSet - end
 
 	r.Log.Info("Reconciled Service successfully")
 

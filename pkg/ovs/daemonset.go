@@ -16,8 +16,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/openstack-k8s-operators/lib-common/modules/common"
-	"github.com/openstack-k8s-operators/lib-common/modules/common/affinity"
 	"github.com/openstack-k8s-operators/lib-common/modules/common/env"
 	"github.com/openstack-k8s-operators/ovs-operator/api/v1beta1"
 
@@ -56,12 +54,12 @@ func getPhysicalNetworks(
 	return physNets
 }
 
-// Deployment func
-func Deployment(
+// DaemonSet func
+func DaemonSet(
 	instance *v1beta1.OVS,
 	configHash string,
 	labels map[string]string,
-) *appsv1.Deployment {
+) *appsv1.DaemonSet {
 
 	runAsUser := int64(0)
 	privileged := true
@@ -105,16 +103,15 @@ func Deployment(
 	envVars["EnableChassisAsGateway"] = env.SetValue(fmt.Sprintf("%t", instance.Spec.ExternalIDS.EnableChassisAsGateway))
 	envVars["PhysicalNetworks"] = env.SetValue(getPhysicalNetworks(instance))
 
-	deployment := &appsv1.Deployment{
+	daemonset := &appsv1.DaemonSet{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      ServiceName,
 			Namespace: instance.Namespace,
 		},
-		Spec: appsv1.DeploymentSpec{
+		Spec: appsv1.DaemonSetSpec{
 			Selector: &metav1.LabelSelector{
 				MatchLabels: labels,
 			},
-			Replicas: &instance.Spec.Replicas,
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: labels,
@@ -197,21 +194,12 @@ func Deployment(
 			},
 		},
 	}
-	deployment.Spec.Template.Spec.Volumes = GetVolumes(instance.Name)
-	// If possible two pods of the same service should not
-	// run on the same worker node. If this is not possible
-	// the get still created on the same worker node.
-	deployment.Spec.Template.Spec.Affinity = affinity.DistributePods(
-		common.AppSelector,
-		[]string{
-			ServiceName,
-		},
-		corev1.LabelHostname,
-	)
+	daemonset.Spec.Template.Spec.Volumes = GetVolumes(instance.Name)
+
 	if instance.Spec.NodeSelector != nil && len(instance.Spec.NodeSelector) > 0 {
-		deployment.Spec.Template.Spec.NodeSelector = instance.Spec.NodeSelector
+		daemonset.Spec.Template.Spec.NodeSelector = instance.Spec.NodeSelector
 	}
 
-	return deployment
+	return daemonset
 
 }
