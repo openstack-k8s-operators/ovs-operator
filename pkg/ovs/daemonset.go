@@ -26,7 +26,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-type Net struct {
+type net struct {
 	Name      string
 	Namespace string
 }
@@ -34,11 +34,11 @@ type Net struct {
 func getNetworksList(
 	instance *v1beta1.OVS,
 ) (string, error) {
-	physNets := []Net{}
+	physNets := []net{}
 	for physNet := range instance.Spec.NicMappings {
 		physNets = append(
 			physNets,
-			Net{
+			net{
 				Name:      physNet,
 				Namespace: instance.Namespace,
 			},
