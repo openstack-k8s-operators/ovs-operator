@@ -5,7 +5,7 @@ metadata:
 spec:
   replicas: 1
   ovsContainerImage: "quay.io/skaplons/ovs:latest"
-  ovnContainerImage: "quay.io/tripleovictoria/openstack-ovn-controller:current-tripleo"
+  ovnContainerImage: "quay.io/tripleowallaby/openstack-ovn-controller:current-tripleo"
   external-ids:
     system-id: "random"
     hostname: "devcontainer"
