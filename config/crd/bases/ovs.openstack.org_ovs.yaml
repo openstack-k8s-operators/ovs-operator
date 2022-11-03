@@ -50,7 +50,6 @@ spec:
                   system-id:
                     type: string
                 required:
-                - enable-chassis-as-gateway
                 - ovn-bridge
                 - ovn-encap-type
                 - ovn-remote

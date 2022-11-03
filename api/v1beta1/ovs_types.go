@@ -98,5 +98,5 @@ type OVSExternalIDs struct {
 	OvnBridge              string `json:"ovn-bridge"`
 	OvnRemote              string `json:"ovn-remote"`
 	OvnEncapType           string `json:"ovn-encap-type"`
-	EnableChassisAsGateway bool   `json:"enable-chassis-as-gateway" optional:"false"`
+	EnableChassisAsGateway bool   `json:"enable-chassis-as-gateway,omitempty" optional:"true"`
 }

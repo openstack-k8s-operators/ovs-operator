@@ -10,7 +10,6 @@ spec:
     ovn-bridge: "br-int"
     ovn-remote: "tcp:1.2.3.4:6442"
     ovn-encap-type: "geneve,vxlan"
-    enable-chassis-as-gateway: false
   nic_mappings:
     physnet1: enp2s0.100
     physnet2: enp2s0.200
