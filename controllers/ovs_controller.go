@@ -203,12 +203,15 @@ func (r *OVSReconciler) reconcileUpgrade(ctx context.Context, instance *ovsv1bet
 func (r *OVSReconciler) reconcileNormal(ctx context.Context, instance *ovsv1beta1.OVS, helper *helper.Helper) (ctrl.Result, error) {
 	r.Log.Info("Reconciling Service")
 
-	// If the service object doesn't have our finalizer, add it.
-	controllerutil.AddFinalizer(instance, helper.GetFinalizer())
-	// Register the finalizer immediately to avoid orphaning resources on delete
-	if err := r.Update(ctx, instance); err != nil {
+	if !controllerutil.ContainsFinalizer(instance, helper.GetFinalizer()) {
+		// If the service object doesn't have our finalizer, add it.
+		controllerutil.AddFinalizer(instance, helper.GetFinalizer())
+		// Register the finalizer immediately to avoid orphaning resources on delete
+		err := r.Update(ctx, instance)
+
 		return ctrl.Result{}, err
 	}
+
 	// ConfigMap
 	configMapVars := make(map[string]env.Setter)
 
