@@ -210,6 +210,7 @@ func DaemonSet(
 								"/usr/local/bin/container-scripts/init.sh && /usr/bin/ovn-controller --pidfile --log-file unix:/run/openvswitch/db.sock",
 							},
 							Image: instance.Spec.OvnContainerImage,
+							// TODO(slaweq): to check if ovn-controller really needs such security contexts
 							SecurityContext: &corev1.SecurityContext{
 								Capabilities: &corev1.Capabilities{
 									Add:  []corev1.Capability{"NET_ADMIN", "SYS_ADMIN", "SYS_NICE"},

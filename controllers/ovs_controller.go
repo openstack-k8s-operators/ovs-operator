@@ -215,7 +215,7 @@ func (r *OVSReconciler) reconcileNormal(ctx context.Context, instance *ovsv1beta
 	instance.Status.Conditions.MarkTrue(condition.InputReadyCondition, condition.InputReadyMessage)
 
 	//
-	// create Configmap required for neutron input
+	// create Configmap required for ovs input
 	// - %-scripts configmap holding scripts to e.g. bootstrap the service
 	//
 	err := r.generateServiceConfigMaps(ctx, helper, instance, &configMapVars)
