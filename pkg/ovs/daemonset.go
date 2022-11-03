@@ -13,45 +13,55 @@ limitations under the License.
 package ovs
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 
 	"github.com/openstack-k8s-operators/lib-common/modules/common/env"
 	"github.com/openstack-k8s-operators/ovs-operator/api/v1beta1"
+	"golang.org/x/exp/maps"
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+type Net struct {
+	Name      string
+	Namespace string
+}
+
 func getNetworksList(
 	instance *v1beta1.OVS,
-) string {
-	networks := "["
+) (string, error) {
+	physNets := []Net{}
 	for physNet := range instance.Spec.NicMappings {
-		networks += fmt.Sprintf(
-			`{"name": "%s", "namespace": "%s"},`,
-			physNet, instance.Namespace,
+		physNets = append(
+			physNets,
+			Net{
+				Name:      physNet,
+				Namespace: instance.Namespace,
+			},
 		)
 	}
-	networks = strings.TrimSuffix(networks, ",")
-	networks += "]"
-	return networks
+	networks, err := json.Marshal(physNets)
+	if err != nil {
+		return "", fmt.Errorf("failed to encode networks %s into json: %w",
+			physNets, err)
+	}
+	return string(networks), nil
 }
 
 func getPhysicalNetworks(
 	instance *v1beta1.OVS,
 ) string {
-	physNets := ""
-	for physNet := range instance.Spec.NicMappings {
-		// NOTE(slaweq): to make things easier, each physical bridge will have
-		//               the same name as "br-<physical network>"
-		// NOTE(slaweq): interface names aren't important as inside Pod they will have
-		//               names like "net1, net2..." so only order is important really
-		physNets += fmt.Sprintf("%s ", physNet)
-	}
-	physNets = strings.TrimSuffix(physNets, ",")
-	return physNets
+	// NOTE(slaweq): to make things easier, each physical bridge will have
+	//               the same name as "br-<physical network>"
+	// NOTE(slaweq): interface names aren't important as inside Pod they will have
+	//               names like "net1, net2..." so only order is important really
+	return strings.Join(
+		maps.Keys(instance.Spec.NicMappings), " ",
+	)
 }
 
 // DaemonSet func
@@ -59,7 +69,7 @@ func DaemonSet(
 	instance *v1beta1.OVS,
 	configHash string,
 	labels map[string]string,
-) *appsv1.DaemonSet {
+) (*appsv1.DaemonSet, error) {
 
 	runAsUser := int64(0)
 	privileged := true
@@ -103,6 +113,11 @@ func DaemonSet(
 	envVars["EnableChassisAsGateway"] = env.SetValue(fmt.Sprintf("%t", instance.Spec.ExternalIDS.EnableChassisAsGateway))
 	envVars["PhysicalNetworks"] = env.SetValue(getPhysicalNetworks(instance))
 
+	networkList, err := getNetworksList(instance)
+	if err != nil {
+		return nil, err
+	}
+
 	daemonset := &appsv1.DaemonSet{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      ServiceName,
@@ -116,7 +131,7 @@ func DaemonSet(
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: labels,
 					Annotations: map[string]string{
-						"k8s.v1.cni.cncf.io/networks": getNetworksList(instance),
+						"k8s.v1.cni.cncf.io/networks": networkList,
 					},
 				},
 				Spec: corev1.PodSpec{
@@ -200,6 +215,6 @@ func DaemonSet(
 		daemonset.Spec.Template.Spec.NodeSelector = instance.Spec.NodeSelector
 	}
 
-	return daemonset
+	return daemonset, nil
 
 }

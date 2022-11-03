@@ -291,8 +291,13 @@ func (r *OVSReconciler) reconcileNormal(ctx context.Context, instance *ovsv1beta
 	}
 
 	// Define a new DaemonSet object
+	ovsDaemonSet, err := ovs.DaemonSet(instance, inputHash, serviceLabels)
+	if err != nil {
+		r.Log.Error(err, "Failed to create OVS DaemonSet")
+		return ctrl.Result{}, err
+	}
 	dset := daemonset.NewDaemonSet(
-		ovs.DaemonSet(instance, inputHash, serviceLabels),
+		ovsDaemonSet,
 		5,
 	)
 
