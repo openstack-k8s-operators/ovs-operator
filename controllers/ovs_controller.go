@@ -40,7 +40,6 @@ import (
 	ovsv1beta1 "github.com/openstack-k8s-operators/ovs-operator/api/v1beta1"
 	"github.com/openstack-k8s-operators/ovs-operator/pkg/ovs"
 	appsv1 "k8s.io/api/apps/v1"
-	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 )
 
@@ -65,11 +64,7 @@ func (r *OVSReconciler) GetLogger() logr.Logger {
 // +kubebuilder:rbac:groups=ovs.openstack.org,resources=ovs,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=ovs.openstack.org,resources=ovs/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=ovs.openstack.org,resources=ovs/finalizers,verbs=update
-// +kubebuilder:rbac:groups=core,resources=secrets,verbs=get;list;watch;create;update;patch;delete;
 // +kubebuilder:rbac:groups=core,resources=configmaps,verbs=get;list;watch;create;update;patch;delete;
-// +kubebuilder:rbac:groups=core,resources=services,verbs=get;list;watch;create;patch;update;delete;
-// +kubebuilder:rbac:groups=batch,resources=jobs,verbs=get;list;watch;create;patch;update;delete;
-// +kubebuilder:rbac:groups=route.openshift.io,resources=routes,verbs=get;list;watch;create;update;patch;delete;
 // +kubebuilder:rbac:groups=k8s.cni.cncf.io,resources=*,verbs=*;
 // +kubebuilder:rbac:groups=apps,resources=daemonsets,verbs=create;delete;get;list;patch;update;watch
 
@@ -158,8 +153,6 @@ func (r *OVSReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.R
 func (r *OVSReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&ovsv1beta1.OVS{}).
-		Owns(&batchv1.Job{}).
-		Owns(&corev1.Service{}).
 		Owns(&corev1.ConfigMap{}).
 		Owns(&netattdefv1.NetworkAttachmentDefinition{}).
 		Owns(&appsv1.DaemonSet{}).
