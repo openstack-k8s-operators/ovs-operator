@@ -26,13 +26,6 @@ import (
 // OVSSpec defines the desired state of OVS
 type OVSSpec struct {
 	// +kubebuilder:validation:Optional
-	// +kubebuilder:default=1
-	// +kubebuilder:validation:Maximum=1
-	// +kubebuilder:validation:Minimum=0
-	// Replicas of OVS to run
-	Replicas int32 `json:"replicas,omitempty"`
-
-	// +kubebuilder:validation:Optional
 	ExternalIDS OVSExternalIDs `json:"external-ids"`
 
 	OvsContainerImage string `json:"ovsContainerImage"`

@@ -3,7 +3,6 @@ kind: OVS
 metadata:
   name: openvswitch
 spec:
-  replicas: 1
   ovsContainerImage: "quay.io/skaplons/ovs:latest"
   ovnContainerImage: "quay.io/tripleowallaby/openstack-ovn-controller:current-tripleo"
   external-ids:

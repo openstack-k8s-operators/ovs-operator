@@ -76,13 +76,6 @@ spec:
                 type: string
               ovsContainerImage:
                 type: string
-              replicas:
-                default: 1
-                description: Replicas of OVS to run
-                format: int32
-                maximum: 1
-                minimum: 0
-                type: integer
               resources:
                 description: Resources - Compute Resources required by this service
                   (Limits/Requests). https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
