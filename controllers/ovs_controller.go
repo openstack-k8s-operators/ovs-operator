@@ -131,6 +131,18 @@ func (r *OVSReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.R
 		if instance.IsReady() {
 			instance.Status.Conditions.MarkTrue(condition.ReadyCondition, condition.ReadyMessage)
 		}
+
+		if err := helper.SetAfter(instance); err != nil {
+			util.LogErrorForObject(helper, err, "Set after and calc patch/diff", instance)
+		}
+
+		if changed := helper.GetChanges()["status"]; changed {
+			patch := client.MergeFrom(helper.GetBeforeObject())
+
+			if err := r.Status().Patch(ctx, instance, patch); err != nil && !k8s_errors.IsNotFound(err) {
+				util.LogErrorForObject(helper, err, "Update status", instance)
+			}
+		}
 	}()
 
 	// Handle service delete
