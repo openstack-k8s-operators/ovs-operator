@@ -83,15 +83,6 @@ func GetVolumes(name string) []corev1.Volume {
 			},
 		},
 		{
-			Name: "var-lib-ovn",
-			VolumeSource: corev1.VolumeSource{
-				HostPath: &corev1.HostPathVolumeSource{
-					Path: "/var/home/core/openstack/var/lib/ovn",
-					Type: &directoryOrCreate,
-				},
-			},
-		},
-		{
 			Name: "scripts",
 			VolumeSource: corev1.VolumeSource{
 				ConfigMap: &corev1.ConfigMapVolumeSource{
@@ -199,11 +190,6 @@ func GetOvnVolumeMounts() []corev1.VolumeMount {
 		{
 			Name:      "var-log-ovn",
 			MountPath: "/var/log/ovn",
-			ReadOnly:  false,
-		},
-		{
-			Name:      "var-lib-ovn",
-			MountPath: "/var/lib/ovn",
 			ReadOnly:  false,
 		},
 		{
