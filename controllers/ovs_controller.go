@@ -319,6 +319,7 @@ func (r *OVSReconciler) reconcileNormal(ctx context.Context, instance *ovsv1beta
 		return ctrlResult, nil
 	}
 
+	instance.Status.DesiredNumberScheduled = dset.GetDaemonSet().Status.DesiredNumberScheduled
 	instance.Status.NumberReady = dset.GetDaemonSet().Status.NumberReady
 
 	if instance.IsReady() {
