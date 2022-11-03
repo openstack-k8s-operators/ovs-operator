@@ -41,8 +41,6 @@ spec:
                 properties:
                   enable-chassis-as-gateway:
                     type: boolean
-                  hostname:
-                    type: string
                   ovn-bridge:
                     type: string
                   ovn-encap-type:
@@ -53,7 +51,6 @@ spec:
                     type: string
                 required:
                 - enable-chassis-as-gateway
-                - hostname
                 - ovn-bridge
                 - ovn-encap-type
                 - ovn-remote
