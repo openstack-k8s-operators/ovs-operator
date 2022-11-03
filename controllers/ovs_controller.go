@@ -213,7 +213,6 @@ func (r *OVSReconciler) reconcileNormal(ctx context.Context, instance *ovsv1beta
 	// If the service object doesn't have our finalizer, add it.
 	controllerutil.AddFinalizer(instance, helper.GetFinalizer())
 	// Register the finalizer immediately to avoid orphaning resources on delete
-	//if err := patchHelper.Patch(ctx, openStackCluster); err != nil {
 	if err := r.Update(ctx, instance); err != nil {
 		return ctrl.Result{}, err
 	}
