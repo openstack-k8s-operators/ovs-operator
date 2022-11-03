@@ -45,8 +45,6 @@ spec:
                     type: string
                   ovn-bridge:
                     type: string
-                  ovn-encap-ip:
-                    type: string
                   ovn-encap-type:
                     type: string
                   ovn-remote:
@@ -57,7 +55,6 @@ spec:
                 - enable-chassis-as-gateway
                 - hostname
                 - ovn-bridge
-                - ovn-encap-ip
                 - ovn-encap-type
                 - ovn-remote
                 - system-id

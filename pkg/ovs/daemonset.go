@@ -64,6 +64,24 @@ func getPhysicalNetworks(
 	)
 }
 
+// Update a list of corev1.EnvVar in place
+
+// EnvDownwardAPI - set env from FieldRef->FieldPath, e.g. status.podIP
+func EnvDownwardAPI(field string) env.Setter {
+	return func(env *corev1.EnvVar) {
+		if env.ValueFrom == nil {
+			env.ValueFrom = &corev1.EnvVarSource{}
+		}
+		env.Value = ""
+
+		if env.ValueFrom.FieldRef == nil {
+			env.ValueFrom.FieldRef = &corev1.ObjectFieldSelector{}
+		}
+
+		env.ValueFrom.FieldRef.FieldPath = field
+	}
+}
+
 // DaemonSet func
 func DaemonSet(
 	instance *v1beta1.OVS,
@@ -109,7 +127,7 @@ func DaemonSet(
 	envVars["OvnBridge"] = env.SetValue(instance.Spec.ExternalIDS.OvnBridge)
 	envVars["OvnRemote"] = env.SetValue(instance.Spec.ExternalIDS.OvnRemote)
 	envVars["OvnEncapType"] = env.SetValue(instance.Spec.ExternalIDS.OvnEncapType)
-	envVars["OvnEncapIP"] = env.SetValue(instance.Spec.ExternalIDS.OvnEncapIP)
+	envVars["OvnEncapIP"] = EnvDownwardAPI("status.podIP")
 	envVars["EnableChassisAsGateway"] = env.SetValue(fmt.Sprintf("%t", instance.Spec.ExternalIDS.EnableChassisAsGateway))
 	envVars["PhysicalNetworks"] = env.SetValue(getPhysicalNetworks(instance))
 
