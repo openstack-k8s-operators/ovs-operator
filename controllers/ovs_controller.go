@@ -71,7 +71,7 @@ func (r *OVSReconciler) GetLogger() logr.Logger {
 // +kubebuilder:rbac:groups=batch,resources=jobs,verbs=get;list;watch;create;patch;update;delete;
 // +kubebuilder:rbac:groups=route.openshift.io,resources=routes,verbs=get;list;watch;create;update;patch;delete;
 // +kubebuilder:rbac:groups=k8s.cni.cncf.io,resources=*,verbs=*;
-// +kubebuilder:rbac:groups="",resources=pods;pods/status,verbs=get;update;
+// +kubebuilder:rbac:groups=apps,resources=daemonsets,verbs=create;delete;get;list;patch;update;watch
 
 // Reconcile - OVS
 func (r *OVSReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
