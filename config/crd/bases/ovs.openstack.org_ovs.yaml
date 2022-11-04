@@ -45,14 +45,11 @@ spec:
                     type: string
                   ovn-encap-type:
                     type: string
-                  ovn-remote:
-                    type: string
                   system-id:
                     type: string
                 required:
                 - ovn-bridge
                 - ovn-encap-type
-                - ovn-remote
                 - system-id
                 type: object
               nic_mappings:

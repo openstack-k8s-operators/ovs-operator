@@ -18,45 +18,9 @@ rules:
   - update
   - watch
 - apiGroups:
-  - batch
-  resources:
-  - jobs
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
   - ""
   resources:
   - configmaps
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - ""
-  resources:
-  - secrets
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - ""
-  resources:
-  - services
   verbs:
   - create
   - delete
@@ -71,6 +35,14 @@ rules:
   - '*'
   verbs:
   - '*'
+- apiGroups:
+  - ovn.openstack.org
+  resources:
+  - ovndbcluster
+  verbs:
+  - get
+  - list
+  - watch
 - apiGroups:
   - ovs.openstack.org
   resources:
@@ -97,15 +69,3 @@ rules:
   - get
   - patch
   - update
-- apiGroups:
-  - route.openshift.io
-  resources:
-  - routes
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch

@@ -96,7 +96,6 @@ func (instance OVS) IsReady() bool {
 type OVSExternalIDs struct {
 	SystemID               string `json:"system-id"`
 	OvnBridge              string `json:"ovn-bridge"`
-	OvnRemote              string `json:"ovn-remote"`
 	OvnEncapType           string `json:"ovn-encap-type"`
 	EnableChassisAsGateway bool   `json:"enable-chassis-as-gateway,omitempty" optional:"true"`
 }

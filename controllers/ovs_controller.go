@@ -67,6 +67,7 @@ func (r *OVSReconciler) GetLogger() logr.Logger {
 // +kubebuilder:rbac:groups=core,resources=configmaps,verbs=get;list;watch;create;update;patch;delete;
 // +kubebuilder:rbac:groups=k8s.cni.cncf.io,resources=*,verbs=*;
 // +kubebuilder:rbac:groups=apps,resources=daemonsets,verbs=create;delete;get;list;patch;update;watch
+// +kubebuilder:rbac:groups=ovn.openstack.org,resources=ovndbcluster,verbs=get;list;watch;
 
 // Reconcile - OVS
 func (r *OVSReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
@@ -288,7 +289,7 @@ func (r *OVSReconciler) reconcileNormal(ctx context.Context, instance *ovsv1beta
 	}
 
 	// Define a new DaemonSet object
-	ovsDaemonSet, err := ovs.DaemonSet(instance, inputHash, serviceLabels)
+	ovsDaemonSet, err := ovs.DaemonSet(ctx, helper, instance, inputHash, serviceLabels)
 	if err != nil {
 		r.Log.Error(err, "Failed to create OVS DaemonSet")
 		return ctrl.Result{}, err

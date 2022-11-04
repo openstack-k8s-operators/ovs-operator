@@ -13,11 +13,14 @@ limitations under the License.
 package ovs
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/openstack-k8s-operators/lib-common/modules/common/env"
+	"github.com/openstack-k8s-operators/lib-common/modules/common/helper"
 	"github.com/openstack-k8s-operators/ovs-operator/api/v1beta1"
 
+	ovnclient "github.com/openstack-k8s-operators/ovn-operator/api/v1alpha1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -25,6 +28,8 @@ import (
 
 // DaemonSet func
 func DaemonSet(
+	ctx context.Context,
+	h *helper.Helper,
 	instance *v1beta1.OVS,
 	configHash string,
 	labels map[string]string,
@@ -61,12 +66,17 @@ func DaemonSet(
 		},
 	}
 
+	dbmap, err := ovnclient.GetDBEndpoints(ctx, h, instance.Namespace, map[string]string{})
+	if err != nil {
+		return nil, err
+	}
+
 	envVars := map[string]env.Setter{}
 	envVars["KOLLA_CONFIG_FILE"] = env.SetValue(KollaConfigAPI)
 	envVars["KOLLA_CONFIG_STRATEGY"] = env.SetValue("COPY_ALWAYS")
 	envVars["CONFIG_HASH"] = env.SetValue(configHash)
 	envVars["OvnBridge"] = env.SetValue(instance.Spec.ExternalIDS.OvnBridge)
-	envVars["OvnRemote"] = env.SetValue(instance.Spec.ExternalIDS.OvnRemote)
+	envVars["OvnRemote"] = env.SetValue(dbmap["SB"])
 	envVars["OvnEncapType"] = env.SetValue(instance.Spec.ExternalIDS.OvnEncapType)
 	envVars["OvnEncapIP"] = EnvDownwardAPI("status.podIP")
 	envVars["EnableChassisAsGateway"] = env.SetValue(fmt.Sprintf("%t", instance.Spec.ExternalIDS.EnableChassisAsGateway))
