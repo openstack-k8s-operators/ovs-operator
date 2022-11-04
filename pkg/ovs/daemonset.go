@@ -13,74 +13,15 @@ limitations under the License.
 package ovs
 
 import (
-	"encoding/json"
 	"fmt"
-	"strings"
 
 	"github.com/openstack-k8s-operators/lib-common/modules/common/env"
 	"github.com/openstack-k8s-operators/ovs-operator/api/v1beta1"
-	"golang.org/x/exp/maps"
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
-
-type net struct {
-	Name      string
-	Namespace string
-}
-
-func getNetworksList(
-	instance *v1beta1.OVS,
-) (string, error) {
-	physNets := []net{}
-	for physNet := range instance.Spec.NicMappings {
-		physNets = append(
-			physNets,
-			net{
-				Name:      physNet,
-				Namespace: instance.Namespace,
-			},
-		)
-	}
-	networks, err := json.Marshal(physNets)
-	if err != nil {
-		return "", fmt.Errorf("failed to encode networks %s into json: %w",
-			physNets, err)
-	}
-	return string(networks), nil
-}
-
-func getPhysicalNetworks(
-	instance *v1beta1.OVS,
-) string {
-	// NOTE(slaweq): to make things easier, each physical bridge will have
-	//               the same name as "br-<physical network>"
-	// NOTE(slaweq): interface names aren't important as inside Pod they will have
-	//               names like "net1, net2..." so only order is important really
-	return strings.Join(
-		maps.Keys(instance.Spec.NicMappings), " ",
-	)
-}
-
-// Update a list of corev1.EnvVar in place
-
-// EnvDownwardAPI - set env from FieldRef->FieldPath, e.g. status.podIP
-func EnvDownwardAPI(field string) env.Setter {
-	return func(env *corev1.EnvVar) {
-		if env.ValueFrom == nil {
-			env.ValueFrom = &corev1.EnvVarSource{}
-		}
-		env.Value = ""
-
-		if env.ValueFrom.FieldRef == nil {
-			env.ValueFrom.FieldRef = &corev1.ObjectFieldSelector{}
-		}
-
-		env.ValueFrom.FieldRef.FieldPath = field
-	}
-}
 
 // DaemonSet func
 func DaemonSet(
