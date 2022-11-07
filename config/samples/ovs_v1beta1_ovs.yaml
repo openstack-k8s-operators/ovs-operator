@@ -1,0 +1,14 @@
+apiVersion: ovs.openstack.org/v1beta1
+kind: OVS
+metadata:
+  name: openvswitch
+spec:
+  ovsContainerImage: "quay.io/skaplons/ovs:latest"
+  ovnContainerImage: "quay.io/tripleowallaby/openstack-ovn-controller:current-tripleo"
+  external-ids:
+    system-id: "random"
+    ovn-bridge: "br-int"
+    ovn-encap-type: "geneve,vxlan"
+  nic_mappings:
+    physnet1: enp2s0.100
+    physnet2: enp2s0.200

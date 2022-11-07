@@ -1,0 +1,20 @@
+# permissions for end users to view ovs.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: ovs-viewer-role
+rules:
+- apiGroups:
+  - ovs.openstack.org
+  resources:
+  - ovs
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ovs.openstack.org
+  resources:
+  - ovs/status
+  verbs:
+  - get

@@ -1,0 +1,71 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: null
+  name: manager-role
+rules:
+- apiGroups:
+  - apps
+  resources:
+  - daemonsets
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - k8s.cni.cncf.io
+  resources:
+  - '*'
+  verbs:
+  - '*'
+- apiGroups:
+  - ovn.openstack.org
+  resources:
+  - ovndbcluster
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ovs.openstack.org
+  resources:
+  - ovs
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ovs.openstack.org
+  resources:
+  - ovs/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - ovs.openstack.org
+  resources:
+  - ovs/status
+  verbs:
+  - get
+  - patch
+  - update
