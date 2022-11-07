@@ -28,8 +28,10 @@ type OVSSpec struct {
 	// +kubebuilder:validation:Optional
 	ExternalIDS OVSExternalIDs `json:"external-ids"`
 
+	// Image used for the ovsdb-server and ovs-vswitchd containers
 	OvsContainerImage string `json:"ovsContainerImage"`
 
+	// Image used for the ovn-controller container
 	OvnContainerImage string `json:"ovnContainerImage"`
 
 	// +kubebuilder:validation:Optional
