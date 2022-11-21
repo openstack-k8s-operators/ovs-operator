@@ -7,7 +7,7 @@ require (
 	github.com/onsi/gomega v1.24.1
 	github.com/openstack-k8s-operators/ovs-operator/api v0.0.0-00010101000000-000000000000
 	k8s.io/apimachinery v0.25.4
-	k8s.io/client-go v0.25.2
+	k8s.io/client-go v0.25.4
 	sigs.k8s.io/controller-runtime v0.13.1
 )
 
