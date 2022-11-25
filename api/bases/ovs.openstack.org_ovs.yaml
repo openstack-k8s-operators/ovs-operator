@@ -63,8 +63,10 @@ spec:
                   this service
                 type: object
               ovnContainerImage:
+                description: Image used for the ovn-controller container
                 type: string
               ovsContainerImage:
+                description: Image used for the ovsdb-server and ovs-vswitchd containers
                 type: string
               resources:
                 description: Resources - Compute Resources required by this service
