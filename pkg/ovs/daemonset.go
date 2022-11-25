@@ -78,9 +78,17 @@ func DaemonSet(
 	envVars["OvnBridge"] = env.SetValue(instance.Spec.ExternalIDS.OvnBridge)
 	envVars["OvnRemote"] = env.SetValue(dbmap["SB"])
 	envVars["OvnEncapType"] = env.SetValue(instance.Spec.ExternalIDS.OvnEncapType)
-	envVars["OvnEncapIP"] = EnvDownwardAPI("status.podIP")
 	envVars["EnableChassisAsGateway"] = env.SetValue(fmt.Sprintf("%t", instance.Spec.ExternalIDS.EnableChassisAsGateway))
+	envVars["PodIP"] = EnvDownwardAPI("status.podIP")
 	envVars["PhysicalNetworks"] = env.SetValue(getPhysicalNetworks(instance))
+	if instance.Spec.TunnelNetworkCidr != "" {
+		envVars["TunnelNetworkCidr"] = env.SetValue(instance.Spec.TunnelNetworkCidr)
+		tunnelIP, err := GetIPFromCidr(instance.Spec.TunnelNetworkCidr)
+		if err != nil {
+			return nil, err
+		}
+		envVars["OvnEncapIP"] = env.SetValue(tunnelIP)
+	}
 
 	networkList, err := getNetworksList(instance)
 	if err != nil {

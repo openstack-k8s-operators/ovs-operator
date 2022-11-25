@@ -93,6 +93,10 @@ spec:
                       to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                     type: object
                 type: object
+              tunnelNetworkCidr:
+                type: string
+              tunnelNetworkNic:
+                type: string
             required:
             - ovnContainerImage
             - ovsContainerImage
@@ -157,6 +161,9 @@ spec:
                 description: NumberReady of the ovs instances
                 format: int32
                 type: integer
+              tunnelNetworkIP:
+                description: IP address used to establish tunnels
+                type: string
             type: object
         type: object
     served: true

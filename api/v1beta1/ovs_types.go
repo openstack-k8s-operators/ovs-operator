@@ -35,6 +35,14 @@ type OVSSpec struct {
 	OvnContainerImage string `json:"ovnContainerImage"`
 
 	// +kubebuilder:validation:Optional
+	// +optional
+	TunnelNetworkNic string `json:"tunnelNetworkNic,omitempty"`
+
+	// +kubebuilder:validation:Optional
+	// +optional
+	TunnelNetworkCidr string `json:"tunnelNetworkCidr,omitempty"`
+
+	// +kubebuilder:validation:Optional
 	NicMappings map[string]string `json:"nic_mappings,omitempty"`
 
 	// +kubebuilder:validation:Optional
@@ -60,6 +68,9 @@ type OVSStatus struct {
 
 	// Map of hashes to track e.g. job status
 	Hash map[string]string `json:"hash,omitempty"`
+
+	// IP address used to establish tunnels
+	TunnelNetworkIP string `json:"tunnelNetworkIP,omitempty" optional:"PodIP"`
 }
 
 //+kubebuilder:object:root=true

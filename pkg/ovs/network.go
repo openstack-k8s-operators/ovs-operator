@@ -24,6 +24,51 @@ import (
 	"github.com/openstack-k8s-operators/ovs-operator/api/v1beta1"
 )
 
+func createNetworkAttachementDefinition(
+	ctx context.Context,
+	instance *v1beta1.OVS,
+	labels map[string]string,
+	k8sClient client.Client,
+	netName string,
+	interfaceName string,
+) error {
+	var nad *netattdefv1.NetworkAttachmentDefinition
+	nad = &netattdefv1.NetworkAttachmentDefinition{}
+	err := k8sClient.Get(
+		ctx,
+		client.ObjectKey{
+			Namespace: instance.Namespace,
+			Name:      netName,
+		},
+		nad,
+	)
+	if err != nil {
+		if !k8s_errors.IsNotFound(err) {
+			return fmt.Errorf("can not get NetworkAttachmentDefinition %s/%s: %w",
+				netName, interfaceName, err)
+		}
+
+		nad = &netattdefv1.NetworkAttachmentDefinition{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      netName,
+				Namespace: instance.Namespace,
+				Labels:    labels,
+			},
+			Spec: netattdefv1.NetworkAttachmentDefinitionSpec{
+				Config: fmt.Sprintf(
+					`{"cniVersion": "0.3.1", "name": "%s", "type": "host-device", "device": "%s"}`,
+					netName, interfaceName),
+			},
+		}
+		// Request object not found, lets create it
+		if err := k8sClient.Create(ctx, nad); err != nil {
+			return fmt.Errorf("can not create NetworkAttachmentDefinition %s/%s: %w",
+				netName, interfaceName, err)
+		}
+	}
+	return nil
+}
+
 // CreateAdditionalNetworks - creates network attachement definitions based on the provided mappings
 func CreateAdditionalNetworks(
 	ctx context.Context,
@@ -32,41 +77,17 @@ func CreateAdditionalNetworks(
 	k8sClient client.Client,
 ) error {
 
-	var nad *netattdefv1.NetworkAttachmentDefinition
+	if instance.Spec.TunnelNetworkNic != "" {
+		err := createNetworkAttachementDefinition(ctx, instance, labels, k8sClient, TunnelNetworkName, instance.Spec.TunnelNetworkNic)
+		if err != nil {
+			return err
+		}
+	}
 
 	for physNet, interfaceName := range instance.Spec.NicMappings {
-		nad = &netattdefv1.NetworkAttachmentDefinition{}
-		err := k8sClient.Get(
-			ctx,
-			client.ObjectKey{
-				Namespace: instance.Namespace,
-				Name:      physNet,
-			},
-			nad,
-		)
+		err := createNetworkAttachementDefinition(ctx, instance, labels, k8sClient, physNet, interfaceName)
 		if err != nil {
-			if !k8s_errors.IsNotFound(err) {
-				return fmt.Errorf("can not get NetworkAttachmentDefinition %s/%s: %w",
-					physNet, interfaceName, err)
-			}
-
-			nad = &netattdefv1.NetworkAttachmentDefinition{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      physNet,
-					Namespace: instance.Namespace,
-					Labels:    labels,
-				},
-				Spec: netattdefv1.NetworkAttachmentDefinitionSpec{
-					Config: fmt.Sprintf(
-						`{"cniVersion": "0.3.1", "name": "%s", "type": "host-device", "device": "%s"}`,
-						physNet, interfaceName),
-				},
-			}
-			// Request object not found, lets create it
-			if err := k8sClient.Create(ctx, nad); err != nil {
-				return fmt.Errorf("can not create NetworkAttachmentDefinition %s/%s: %w",
-					physNet, interfaceName, err)
-			}
+			return err
 		}
 	}
 	return nil
