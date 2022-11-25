@@ -35,6 +35,7 @@ type OVSSpec struct {
 	OvnContainerImage string `json:"ovnContainerImage"`
 
 	// +kubebuilder:validation:Optional
+	// +optional
 	NicMappings map[string]string `json:"nic_mappings,omitempty"`
 
 	// +kubebuilder:validation:Optional
