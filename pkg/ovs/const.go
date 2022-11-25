@@ -11,4 +11,6 @@ const (
 	ServiceAccountName = "ovs-operator-ovs"
 	// KollaConfigAPI -
 	KollaConfigAPI = "/var/lib/config-data/merged/ovs-config.json"
+	//TunnelNetworkName -
+	TunnelNetworkName = "tunnel-network"
 )

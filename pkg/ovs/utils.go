@@ -15,6 +15,7 @@ package ovs
 import (
 	"encoding/json"
 	"fmt"
+	"net"
 	"strings"
 
 	"github.com/openstack-k8s-operators/lib-common/modules/common/env"
@@ -23,7 +24,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
-type net struct {
+type network struct {
 	Name      string
 	Namespace string
 }
@@ -31,20 +32,30 @@ type net struct {
 func getNetworksList(
 	instance *v1beta1.OVS,
 ) (string, error) {
-	physNets := []net{}
+	networksList := []network{}
+	if instance.Spec.TunnelNetworkNic != "" {
+		networksList = append(
+			networksList,
+			network{
+				Name:      TunnelNetworkName,
+				Namespace: instance.Namespace,
+			},
+		)
+	}
+
 	for physNet := range instance.Spec.NicMappings {
-		physNets = append(
-			physNets,
-			net{
+		networksList = append(
+			networksList,
+			network{
 				Name:      physNet,
 				Namespace: instance.Namespace,
 			},
 		)
 	}
-	networks, err := json.Marshal(physNets)
+	networks, err := json.Marshal(networksList)
 	if err != nil {
 		return "", fmt.Errorf("failed to encode networks %s into json: %w",
-			physNets, err)
+			networksList, err)
 	}
 	return string(networks), nil
 }
@@ -59,6 +70,15 @@ func getPhysicalNetworks(
 	return strings.Join(
 		maps.Keys(instance.Spec.NicMappings), " ",
 	)
+}
+
+// GetIPFromCidr - get IP address from given CIDR
+func GetIPFromCidr(cidr string) (string, error) {
+	ip, _, err := net.ParseCIDR(cidr)
+	if err != nil {
+		return "", fmt.Errorf("failed to parse CIDR %s: %w", cidr, err)
+	}
+	return ip.String(), nil
 }
 
 // EnvDownwardAPI - set env from FieldRef->FieldPath, e.g. status.podIP

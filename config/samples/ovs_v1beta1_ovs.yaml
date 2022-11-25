@@ -10,5 +10,7 @@ spec:
     ovn-bridge: "br-int"
     ovn-encap-type: "geneve,vxlan"
   nic_mappings:
-    physnet1: enp2s0.100
-    physnet2: enp2s0.200
+    physnet2: enp2s0.100
+    physnet3: enp2s0.200
+  tunnelNetworkCidr: 10.20.30.40/24
+  tunnelNetworkNic: enp2s0.300

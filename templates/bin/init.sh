@@ -19,9 +19,10 @@ set -ex
 OvnBridge=${OvnBridge:-"br-int"}
 OvnRemote=${OvnRemote:-"tcp:127.0.0.1:6642"}
 OvnEncapType=${OvnEncapType:-"geneve"}
-OvnEncapIP=${OvnEncapIP:-"127.0.0.1"}
-EnableChassisAsGateway=${EnableChassisAsGateway:-false}
+OvnEncapIP=${OvnEncapIP:-$PodIP}
+TunnelNetworkCidr=${TunnelNetworkCidr:-""}
 PhysicalNetworks=${PhysicalNetworks:-""}
+EnableChassisAsGateway=${EnableChassisAsGateway:-false}
 
 function wait_for_ovsdb_server {
     while true; do
@@ -46,17 +47,31 @@ function configure_external_ids {
     fi
 }
 
+# Configure interface which will be used to establish Geneve or vxlan tunnels
+function configure_tunnel_network {
+    # Tunnel network is always attached as net1 to the POD
+    if [ -n "$TunnelNetworkCidr" ]; then
+        ip address add ${TunnelNetworkCidr} dev net1
+    fi
+    ip link set up dev net1
+}
+
 # Configure bridge mappings and physical bridges
 function configure_physical_networks {
     local OvnBridgeMappings=""
     local net_number=1
+    if [ -n "$TunnelNetworkCidr" ]; then
+        # If tunnel network is configured, its interface is always plugged as first network
+        # in the POD
+        net_number=2
+    fi
     for physicalNetwork in ${PhysicalNetworks}; do
         br_name="br-${physicalNetwork}"
         ovs-vsctl --may-exist add-br ${br_name}
         ovs-vsctl --may-exist add-port ${br_name} net${net_number}
         net_number=$(( net_number+1 ))
         bridgeMapping="${physicalNetwork}:${br_name}"
-        if [ -z "$OvnBridgeMappings"]; then
+        if [ -z "$OvnBridgeMappings" ]; then
             OvnBridgeMappings=$bridgeMapping
         else
             OvnBridgeMappings="${OvnBridgeMappings},${bridgeMapping}"
@@ -67,8 +82,8 @@ function configure_physical_networks {
     fi
 }
 
-
 wait_for_ovsdb_server
+configure_tunnel_network
 configure_external_ids
 configure_physical_networks
 

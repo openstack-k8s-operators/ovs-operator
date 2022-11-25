@@ -299,6 +299,16 @@ func (r *OVSReconciler) reconcileNormal(ctx context.Context, instance *ovsv1beta
 		5,
 	)
 
+	if instance.Spec.TunnelNetworkCidr != "" {
+		tunnelIP, err := ovs.GetIPFromCidr(instance.Spec.TunnelNetworkCidr)
+		if err != nil {
+			return ctrl.Result{}, err
+		}
+		instance.Status.TunnelNetworkIP = tunnelIP
+	} else {
+		instance.Status.TunnelNetworkIP = "Check POD IP address"
+	}
+
 	ctrlResult, err = dset.CreateOrPatch(ctx, helper)
 	if err != nil {
 		instance.Status.Conditions.Set(condition.FalseCondition(
