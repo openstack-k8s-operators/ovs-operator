@@ -81,6 +81,7 @@ func DaemonSet(
 	envVars["OvnEncapIP"] = EnvDownwardAPI("status.podIP")
 	envVars["EnableChassisAsGateway"] = env.SetValue(fmt.Sprintf("%t", instance.Spec.ExternalIDS.EnableChassisAsGateway))
 	envVars["PhysicalNetworks"] = env.SetValue(getPhysicalNetworks(instance))
+	envVars["OvnHostName"] = EnvDownwardAPI("spec.nodeName")
 
 	networkList, err := getNetworksList(instance)
 	if err != nil {

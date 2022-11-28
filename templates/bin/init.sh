@@ -22,6 +22,7 @@ OvnEncapType=${OvnEncapType:-"geneve"}
 OvnEncapIP=${OvnEncapIP:-"127.0.0.1"}
 EnableChassisAsGateway=${EnableChassisAsGateway:-false}
 PhysicalNetworks=${PhysicalNetworks:-""}
+OvnHostName=${OvnHostName:-""}
 
 function wait_for_ovsdb_server {
     while true; do
@@ -41,6 +42,9 @@ function configure_external_ids {
     ovs-vsctl set open . external-ids:ovn-remote=${OvnRemote}
     ovs-vsctl set open . external-ids:ovn-encap-type=${OvnEncapType}
     ovs-vsctl set open . external-ids:ovn-encap-ip=${OvnEncapIP}
+    if [ -n "$OvnHostName" ]; then
+        ovs-vsctl set open . external-ids:hostname=${OvnHostName}
+    fi
     if [ "$EnableChassisAsGateway" == "true" ]; then
         ovs-vsctl set open . external-ids:ovn-cms-options=enable-chassis-as-gw
     fi
