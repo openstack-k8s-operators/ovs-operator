@@ -8,7 +8,7 @@ spec:
   external-ids:
     system-id: "random"
     ovn-bridge: "br-int"
-    ovn-encap-type: "geneve,vxlan"
+    ovn-encap-type: "geneve"
   nic_mappings:
     physnet1: enp2s0.100
     physnet2: enp2s0.200
