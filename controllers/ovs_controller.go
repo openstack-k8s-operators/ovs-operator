@@ -28,6 +28,8 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
+	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	"github.com/openstack-k8s-operators/lib-common/modules/common"
 	"github.com/openstack-k8s-operators/lib-common/modules/common/condition"
@@ -37,6 +39,7 @@ import (
 	"github.com/openstack-k8s-operators/lib-common/modules/common/helper"
 	"github.com/openstack-k8s-operators/lib-common/modules/common/labels"
 	"github.com/openstack-k8s-operators/lib-common/modules/common/util"
+	ovnclient "github.com/openstack-k8s-operators/ovn-operator/api/v1beta1"
 	ovsv1beta1 "github.com/openstack-k8s-operators/ovs-operator/api/v1beta1"
 	"github.com/openstack-k8s-operators/ovs-operator/pkg/ovs"
 	appsv1 "k8s.io/api/apps/v1"
@@ -152,11 +155,13 @@ func (r *OVSReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.R
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *OVSReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	crs := &ovsv1beta1.OVSList{}
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&ovsv1beta1.OVS{}).
 		Owns(&corev1.ConfigMap{}).
 		Owns(&netattdefv1.NetworkAttachmentDefinition{}).
 		Owns(&appsv1.DaemonSet{}).
+		Watches(&source.Kind{Type: &ovnclient.OVNDBCluster{}}, handler.EnqueueRequestsFromMapFunc(ovnclient.OVNDBClusterNamespaceMapFunc(crs, mgr.GetClient(), r.Log))).
 		Complete(r)
 }
 
