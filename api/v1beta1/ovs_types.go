@@ -103,6 +103,12 @@ func (instance OVS) IsReady() bool {
 type OVSExternalIDs struct {
 	SystemID               string `json:"system-id"`
 	OvnBridge              string `json:"ovn-bridge"`
-	OvnEncapType           string `json:"ovn-encap-type"`
+
+	// +kubebuilder:validation:Optional
+	// +kubebuilder:default="geneve"
+	// +kubebuilder:validation:Enum={"geneve","vxlan"}
+	// OvnEncapType - geneve or vxlan
+	OvnEncapType           string `json:"ovn-encap-type,omitempty"`
+
 	EnableChassisAsGateway bool   `json:"enable-chassis-as-gateway,omitempty" optional:"true"`
 }
