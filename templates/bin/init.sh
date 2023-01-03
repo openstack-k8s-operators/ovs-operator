@@ -13,16 +13,6 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-set -ex
-
-# Configs are obtained from ENV variables.
-OvnBridge=${OvnBridge:-"br-int"}
-OvnRemote=${OvnRemote:-"tcp:127.0.0.1:6642"}
-OvnEncapType=${OvnEncapType:-"geneve"}
-OvnEncapIP=${OvnEncapIP:-"127.0.0.1"}
-EnableChassisAsGateway=${EnableChassisAsGateway:-false}
-PhysicalNetworks=${PhysicalNetworks:-""}
-OvnHostName=${OvnHostName:-""}
 
 function wait_for_ovsdb_server {
     while true; do
@@ -35,6 +25,15 @@ function wait_for_ovsdb_server {
         fi
     done
 }
+
+# Configs are obtained from ENV variables.
+OvnBridge=${OvnBridge:-"br-int"}
+OvnRemote=${OvnRemote:-"tcp:127.0.0.1:6642"}
+OvnEncapType=${OvnEncapType:-"geneve"}
+OvnEncapIP=${OvnEncapIP:-"127.0.0.1"}
+EnableChassisAsGateway=${EnableChassisAsGateway:-false}
+PhysicalNetworks=${PhysicalNetworks:-""}
+OvnHostName=${OvnHostName:-""}
 
 # configure external-ids in OVS
 function configure_external_ids {
@@ -73,6 +72,10 @@ function configure_physical_networks {
 
 
 wait_for_ovsdb_server
+
+# From now on, we should exit immediatelly when any command exits with non-zero status
+set -ex
+
 configure_external_ids
 configure_physical_networks
 

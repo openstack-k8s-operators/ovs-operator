@@ -37,12 +37,14 @@ import (
 	"github.com/openstack-k8s-operators/lib-common/modules/common/daemonset"
 	"github.com/openstack-k8s-operators/lib-common/modules/common/env"
 	"github.com/openstack-k8s-operators/lib-common/modules/common/helper"
+	"github.com/openstack-k8s-operators/lib-common/modules/common/job"
 	"github.com/openstack-k8s-operators/lib-common/modules/common/labels"
 	"github.com/openstack-k8s-operators/lib-common/modules/common/util"
 	ovnclient "github.com/openstack-k8s-operators/ovn-operator/api/v1beta1"
 	ovsv1beta1 "github.com/openstack-k8s-operators/ovs-operator/api/v1beta1"
 	"github.com/openstack-k8s-operators/ovs-operator/pkg/ovs"
 	appsv1 "k8s.io/api/apps/v1"
+	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 )
 
@@ -70,6 +72,7 @@ func (r *OVSReconciler) GetLogger() logr.Logger {
 // +kubebuilder:rbac:groups=core,resources=configmaps,verbs=get;list;watch;create;update;patch;delete;
 // +kubebuilder:rbac:groups=k8s.cni.cncf.io,resources=*,verbs=*;
 // +kubebuilder:rbac:groups=apps,resources=daemonsets,verbs=create;delete;get;list;patch;update;watch
+// +kubebuilder:rbac:groups=batch,resources=jobs,verbs=get;list;watch;create;patch;update;delete;
 // +kubebuilder:rbac:groups=ovn.openstack.org,resources=ovndbclusters,verbs=get;list;watch;
 
 // Reconcile - OVS
@@ -159,6 +162,7 @@ func (r *OVSReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&ovsv1beta1.OVS{}).
 		Owns(&corev1.ConfigMap{}).
+		Owns(&batchv1.Job{}).
 		Owns(&netattdefv1.NetworkAttachmentDefinition{}).
 		Owns(&appsv1.DaemonSet{}).
 		Watches(&source.Kind{Type: &ovnclient.OVNDBCluster{}}, handler.EnqueueRequestsFromMapFunc(ovnclient.OVNDBClusterNamespaceMapFunc(crs, mgr.GetClient(), r.Log))).
@@ -294,7 +298,7 @@ func (r *OVSReconciler) reconcileNormal(ctx context.Context, instance *ovsv1beta
 	}
 
 	// Define a new DaemonSet object
-	ovsDaemonSet, err := ovs.DaemonSet(ctx, helper, instance, inputHash, serviceLabels)
+	ovsDaemonSet, err := ovs.DaemonSet(instance, inputHash, serviceLabels)
 	if err != nil {
 		r.Log.Error(err, "Failed to create OVS DaemonSet")
 		return ctrl.Result{}, err
@@ -329,6 +333,55 @@ func (r *OVSReconciler) reconcileNormal(ctx context.Context, instance *ovsv1beta
 		instance.Status.Conditions.MarkTrue(condition.DeploymentReadyCondition, condition.DeploymentReadyMessage)
 	}
 	// create DaemonSet - end
+
+	// create OVN Config Job - start
+	configHash := instance.Status.Hash[ovsv1beta1.OvnConfigHash]
+	jobDef, err := ovs.ConfigJob(ctx, helper, instance, inputHash, serviceLabels)
+	if err != nil {
+		r.Log.Error(err, "Failed to create OVN controller configuration Job")
+		return ctrl.Result{}, err
+	}
+	configJob := job.NewJob(
+		jobDef,
+		ovsv1beta1.OvnConfigHash,
+		false,
+		5,
+		configHash,
+	)
+	ctrlResult, err = configJob.DoJob(ctx, helper)
+	if (ctrlResult != ctrl.Result{}) {
+		instance.Status.Conditions.Set(
+			condition.FalseCondition(
+				condition.ServiceConfigReadyCondition,
+				condition.RequestedReason,
+				condition.SeverityInfo,
+				condition.ServiceConfigReadyMessage,
+			),
+		)
+		return ctrlResult, nil
+	}
+	if err != nil {
+		r.Log.Error(err, "Failed to configure OVN controller")
+		instance.Status.Conditions.Set(
+			condition.FalseCondition(
+				condition.ServiceConfigReadyCondition,
+				condition.RequestedReason,
+				condition.SeverityInfo,
+				condition.ServiceConfigReadyErrorMessage,
+				err.Error(),
+			),
+		)
+		return ctrl.Result{}, err
+	}
+	if configJob.HasChanged() {
+		instance.Status.Hash[ovsv1beta1.OvnConfigHash] = configJob.GetHash()
+		if err := r.Client.Status().Update(ctx, instance); err != nil {
+			return ctrl.Result{}, err
+		}
+		r.Log.Info(fmt.Sprintf("Job %s hash added - %s", jobDef.Name, instance.Status.Hash[ovsv1beta1.OvnConfigHash]))
+	}
+	instance.Status.Conditions.MarkTrue(condition.ServiceConfigReadyCondition, condition.ServiceConfigReadyMessage)
+	// create OVN Config Job - end
 
 	r.Log.Info("Reconciled Service successfully")
 
