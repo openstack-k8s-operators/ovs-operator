@@ -108,7 +108,7 @@ spec:
         terminationMessagePath: /dev/termination-log
         terminationMessagePolicy: FallbackToLogsOnError
       - args:
-        - /usr/local/bin/container-scripts/init.sh && ovn-controller --pidfile unix:/run/openvswitch/db.sock
+        - ovn-controller --pidfile unix:/run/openvswitch/db.sock
         command:
         - /bin/bash
         - -c
@@ -234,7 +234,7 @@ spec:
     terminationMessagePath: /dev/termination-log
     terminationMessagePolicy: FallbackToLogsOnError
   - args:
-    - /usr/local/bin/container-scripts/init.sh && ovn-controller --pidfile unix:/run/openvswitch/db.sock
+    - ovn-controller --pidfile unix:/run/openvswitch/db.sock
     command:
     - /bin/bash
     - -c

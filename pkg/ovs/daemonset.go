@@ -13,15 +13,9 @@ limitations under the License.
 package ovs
 
 import (
-	"context"
-	"fmt"
-
 	"github.com/openstack-k8s-operators/lib-common/modules/common/env"
-	"github.com/openstack-k8s-operators/lib-common/modules/common/helper"
-	nad "github.com/openstack-k8s-operators/lib-common/modules/common/networkattachment"
 	"github.com/openstack-k8s-operators/ovs-operator/api/v1beta1"
 
-	ovnclient "github.com/openstack-k8s-operators/ovn-operator/api/v1beta1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -29,8 +23,6 @@ import (
 
 // DaemonSet func
 func DaemonSet(
-	ctx context.Context,
-	h *helper.Helper,
 	instance *v1beta1.OVS,
 	configHash string,
 	labels map[string]string,
@@ -68,26 +60,10 @@ func DaemonSet(
 		},
 	}
 
-	dbmap, err := ovnclient.GetDBEndpoints(ctx, h, instance.Namespace, map[string]string{})
-	if err != nil {
-		return nil, err
-	}
-
 	envVars := map[string]env.Setter{}
 	envVars["KOLLA_CONFIG_FILE"] = env.SetValue(KollaConfigAPI)
 	envVars["KOLLA_CONFIG_STRATEGY"] = env.SetValue("COPY_ALWAYS")
 	envVars["CONFIG_HASH"] = env.SetValue(configHash)
-	envVars["OvnBridge"] = env.SetValue(instance.Spec.ExternalIDS.OvnBridge)
-	envVars["OvnRemote"] = env.SetValue(dbmap["internal-SB"])
-	envVars["OvnEncapType"] = env.SetValue(instance.Spec.ExternalIDS.OvnEncapType)
-	if instance.Spec.NetworkAttachment == "" {
-		envVars["OvnEncapNIC"] = env.SetValue("eth0")
-	} else {
-		envVars["OvnEncapNIC"] = env.SetValue(nad.GetNetworkIFName(instance.Spec.NetworkAttachment))
-	}
-	envVars["EnableChassisAsGateway"] = env.SetValue(fmt.Sprintf("%t", instance.Spec.ExternalIDS.EnableChassisAsGateway))
-	envVars["PhysicalNetworks"] = env.SetValue(getPhysicalNetworks(instance))
-	envVars["OvnHostName"] = EnvDownwardAPI("spec.nodeName")
 
 	daemonset := &appsv1.DaemonSet{
 		ObjectMeta: metav1.ObjectMeta{
@@ -169,13 +145,14 @@ func DaemonSet(
 							TerminationMessagePolicy: corev1.TerminationMessageFallbackToLogsOnError,
 						}, {
 							// ovn-controller container
+							// NOTE(slaweq): for some reason, when ovn-controller is started without
+							// bash shell, it fails with error "unrecognized option --pidfile"
 							Name: OvnControllerServiceName,
 							Command: []string{
 								"/bin/bash", "-c",
 							},
 							Args: []string{
-								// First configure external ids and then start ovn controller
-								"/usr/local/bin/container-scripts/init.sh && ovn-controller --pidfile unix:/run/openvswitch/db.sock",
+								"ovn-controller --pidfile unix:/run/openvswitch/db.sock",
 							},
 							Lifecycle: &corev1.Lifecycle{
 								PreStop: &corev1.LifecycleHandler{
