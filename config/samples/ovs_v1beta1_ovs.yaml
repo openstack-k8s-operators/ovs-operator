@@ -3,7 +3,7 @@ kind: OVS
 metadata:
   name: openvswitch
 spec:
-  ovsContainerImage: "quay.io/skaplons/ovs:latest"
+  ovsContainerImage: "quay.io/tripleozedcentos9/openstack-ovn-base:current-tripleo"
   ovnContainerImage: "quay.io/tripleozedcentos9/openstack-ovn-controller:current-tripleo"
   external-ids:
     system-id: "random"
