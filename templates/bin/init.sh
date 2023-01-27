@@ -75,6 +75,3 @@ function configure_physical_networks {
 wait_for_ovsdb_server
 configure_external_ids
 configure_physical_networks
-
-
-
