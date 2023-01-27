@@ -111,10 +111,7 @@ func DaemonSet(
 						{
 							Name: ServiceName + "db-server",
 							Command: []string{
-								"/usr/bin/start-ovs",
-							},
-							Args: []string{
-								"ovsdb-server",
+								"/usr/local/bin/container-scripts/start-ovsdb-server.sh",
 							},
 							Image: instance.Spec.OvsContainerImage,
 							SecurityContext: &corev1.SecurityContext{
@@ -134,10 +131,10 @@ func DaemonSet(
 							// ovs-vswitchd container
 							Name: ServiceName + "-vswitchd",
 							Command: []string{
-								"/usr/bin/start-ovs",
+								"/usr/sbin/ovs-vswitchd",
 							},
 							Args: []string{
-								"ovs-vswitchd",
+								"--pidfile", "--mlockall",
 							},
 							Image: instance.Spec.OvsContainerImage,
 							SecurityContext: &corev1.SecurityContext{

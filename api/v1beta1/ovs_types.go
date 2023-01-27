@@ -29,7 +29,7 @@ type OVSSpec struct {
 	ExternalIDS OVSExternalIDs `json:"external-ids"`
 
 	// +kubebuilder:validation:Optional
-	// +kubebuilder:default="quay.io/skaplons/ovs:latest"
+	// +kubebuilder:default="quay.io/tripleozedcentos9/openstack-ovn-base:current-tripleo"
 	// Image used for the ovsdb-server and ovs-vswitchd containers
 	OvsContainerImage string `json:"ovsContainerImage"`
 

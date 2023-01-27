@@ -337,12 +337,15 @@ func (r *OVSReconciler) generateServiceConfigMaps(
 	cms := []util.Template{
 		// ScriptsConfigMap
 		{
-			Name:               fmt.Sprintf("%s-scripts", instance.Name),
-			Namespace:          instance.Namespace,
-			Type:               util.TemplateTypeScripts,
-			InstanceType:       instance.Kind,
-			AdditionalTemplate: map[string]string{"init.sh": "/bin/init.sh"},
-			Labels:             cmLabels,
+			Name:         fmt.Sprintf("%s-scripts", instance.Name),
+			Namespace:    instance.Namespace,
+			Type:         util.TemplateTypeScripts,
+			InstanceType: instance.Kind,
+			AdditionalTemplate: map[string]string{
+				"init.sh":               "/bin/init.sh",
+				"start-ovsdb-server.sh": "/bin/start-ovsdb-server.sh",
+			},
+			Labels: cmLabels,
 		},
 	}
 	err := configmap.EnsureConfigMaps(ctx, h, instance, cms, envVars)

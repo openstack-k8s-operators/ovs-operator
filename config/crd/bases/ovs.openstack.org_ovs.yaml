@@ -71,7 +71,7 @@ spec:
                 description: Image used for the ovn-controller container
                 type: string
               ovsContainerImage:
-                default: quay.io/skaplons/ovs:latest
+                default: quay.io/tripeozedcentos9/openstack-ovn-base:current-tripleo
                 description: Image used for the ovsdb-server and ovs-vswitchd containers
                 type: string
               resources:

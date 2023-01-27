@@ -130,6 +130,11 @@ func GetOvsDbVolumeMounts() []corev1.VolumeMount {
 			MountPath: "/var/lib/openvswitch",
 			ReadOnly:  false,
 		},
+		{
+			Name:      "scripts",
+			MountPath: "/usr/local/bin/container-scripts",
+			ReadOnly:  true,
+		},
 	}
 }
 
