@@ -40,7 +40,7 @@ type OVSSpec struct {
 
 	// +kubebuilder:validation:Optional
 	// +optional
-	NicMappings map[string]string `json:"nic_mappings,omitempty"`
+	NicMappings map[string]string `json:"nicMappings,omitempty"`
 
 	// +kubebuilder:validation:Optional
 	// Resources - Compute Resources required by this service (Limits/Requests).
