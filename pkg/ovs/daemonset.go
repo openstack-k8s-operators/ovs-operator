@@ -158,7 +158,16 @@ func DaemonSet(
 							},
 							Args: []string{
 								// First configure external ids and then start ovn controller
-								"/usr/local/bin/container-scripts/init.sh && /usr/bin/ovn-controller --pidfile --log-file unix:/run/openvswitch/db.sock",
+								"/usr/local/bin/container-scripts/init.sh && ovn-controller --pidfile unix:/run/openvswitch/db.sock",
+							},
+							Lifecycle: &corev1.Lifecycle{
+								PreStop: &corev1.LifecycleHandler{
+									Exec: &corev1.ExecAction{
+										Command: []string{
+											"/usr/share/ovn/scripts/ovn-ctl", "stop_controller",
+										},
+									},
+								},
 							},
 							Image: instance.Spec.OvnContainerImage,
 							// TODO(slaweq): to check if ovn-controller really needs such security contexts
