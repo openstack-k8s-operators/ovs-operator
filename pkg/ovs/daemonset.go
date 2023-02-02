@@ -113,6 +113,15 @@ func DaemonSet(
 							Command: []string{
 								"/usr/local/bin/container-scripts/start-ovsdb-server.sh",
 							},
+							Lifecycle: &corev1.Lifecycle{
+								PreStop: &corev1.LifecycleHandler{
+									Exec: &corev1.ExecAction{
+										Command: []string{
+											"/usr/share/openvswitch/scripts/ovs-ctl", "stop", "--no-ovs-vswitchd",
+										},
+									},
+								},
+							},
 							Image: instance.Spec.OvsContainerImage,
 							SecurityContext: &corev1.SecurityContext{
 								Capabilities: &corev1.Capabilities{
