@@ -13,7 +13,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-set -ex
+set -x
 
 # Configs are obtained from ENV variables.
 OvnBridge=${OvnBridge:-"br-int"}
