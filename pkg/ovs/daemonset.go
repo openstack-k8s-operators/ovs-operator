@@ -113,6 +113,15 @@ func DaemonSet(
 							Command: []string{
 								"/usr/local/bin/container-scripts/start-ovsdb-server.sh",
 							},
+							Lifecycle: &corev1.Lifecycle{
+								PreStop: &corev1.LifecycleHandler{
+									Exec: &corev1.ExecAction{
+										Command: []string{
+											"/usr/share/openvswitch/scripts/ovs-ctl", "stop", "--no-ovs-vswitchd",
+										},
+									},
+								},
+							},
 							Image: instance.Spec.OvsContainerImage,
 							SecurityContext: &corev1.SecurityContext{
 								Capabilities: &corev1.Capabilities{
@@ -136,6 +145,15 @@ func DaemonSet(
 							Args: []string{
 								"--pidfile", "--mlockall",
 							},
+							Lifecycle: &corev1.Lifecycle{
+								PreStop: &corev1.LifecycleHandler{
+									Exec: &corev1.ExecAction{
+										Command: []string{
+											"/usr/share/openvswitch/scripts/ovs-ctl", "stop", "--no-ovsdb-server",
+										},
+									},
+								},
+							},
 							Image: instance.Spec.OvsContainerImage,
 							SecurityContext: &corev1.SecurityContext{
 								Capabilities: &corev1.Capabilities{
@@ -158,7 +176,16 @@ func DaemonSet(
 							},
 							Args: []string{
 								// First configure external ids and then start ovn controller
-								"/usr/local/bin/container-scripts/init.sh && /usr/bin/ovn-controller --pidfile --log-file unix:/run/openvswitch/db.sock",
+								"/usr/local/bin/container-scripts/init.sh && ovn-controller --pidfile unix:/run/openvswitch/db.sock",
+							},
+							Lifecycle: &corev1.Lifecycle{
+								PreStop: &corev1.LifecycleHandler{
+									Exec: &corev1.ExecAction{
+										Command: []string{
+											"/usr/share/ovn/scripts/ovn-ctl", "stop_controller",
+										},
+									},
+								},
 							},
 							Image: instance.Spec.OvnContainerImage,
 							// TODO(slaweq): to check if ovn-controller really needs such security contexts

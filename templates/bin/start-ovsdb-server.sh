@@ -17,15 +17,9 @@ set -ex
 
 CTL_ARGS="--system-id=random --no-ovs-vswitchd"
 
-function run() {
-    /usr/share/openvswitch/scripts/ovs-ctl $@ $CTL_ARGS
-}
-
 # Initialize or upgrade database if needed
-run start
-run stop
-
-trap 'run stop' SIGTERM
+/usr/share/openvswitch/scripts/ovs-ctl start $CTL_ARGS
+/usr/share/openvswitch/scripts/ovs-ctl stop $CTL_ARGS
 
 # Start the service
 ovsdb-server /etc/openvswitch/conf.db \
@@ -33,6 +27,4 @@ ovsdb-server /etc/openvswitch/conf.db \
     --remote=punix:/var/run/openvswitch/db.sock \
     --private-key=db:Open_vSwitch,SSL,private_key \
     --certificate=db:Open_vSwitch,SSL,certificate \
-    --bootstrap-ca-cert=db:Open_vSwitch,SSL,ca_cert &
-
-wait
+    --bootstrap-ca-cert=db:Open_vSwitch,SSL,ca_cert
