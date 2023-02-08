@@ -19,6 +19,7 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/go-logr/logr"
 	netattdefv1 "github.com/k8snetworkplumbingwg/network-attachment-definition-client/pkg/apis/k8s.cni.cncf.io/v1"
@@ -290,7 +291,7 @@ func (r *OVSReconciler) reconcileNormal(ctx context.Context, instance *ovsv1beta
 	}
 	dset := daemonset.NewDaemonSet(
 		ovsDaemonSet,
-		5,
+		time.Duration(5)*time.Second,
 	)
 
 	ctrlResult, err = dset.CreateOrPatch(ctx, helper)
