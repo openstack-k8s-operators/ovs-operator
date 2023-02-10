@@ -1,0 +1,11 @@
+#
+# Check for:
+#
+# No OVS pods after asking for a non existing node in nodeSelector
+#
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    service: ovs
+  namespace: openstack
