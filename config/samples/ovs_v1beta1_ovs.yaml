@@ -9,6 +9,3 @@ spec:
     system-id: "random"
     ovn-bridge: "br-int"
     ovn-encap-type: "geneve"
-  nicMappings:
-    physnet1: enp2s0.100
-    physnet2: enp2s0.200
