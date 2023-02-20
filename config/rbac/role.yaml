@@ -30,11 +30,24 @@ rules:
   - update
   - watch
 - apiGroups:
+  - ""
+  resources:
+  - pods
+  verbs:
+  - get
+  - list
+- apiGroups:
   - k8s.cni.cncf.io
   resources:
-  - '*'
+  - network-attachment-definitions
   verbs:
-  - '*'
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
 - apiGroups:
   - ovn.openstack.org
   resources:

@@ -56,6 +56,11 @@ spec:
                 - ovn-bridge
                 - system-id
                 type: object
+              networkAttachment:
+                description: NetworkAttachment is a NetworkAttachment resource name
+                  to expose the service to the given network. If specified the IP
+                  address of this network is used as the OvnEncapIP.
+                type: string
               nicMappings:
                 additionalProperties:
                   type: string
@@ -177,6 +182,13 @@ spec:
                 additionalProperties:
                   type: string
                 description: Map of hashes to track e.g. job status
+                type: object
+              networkAttachments:
+                additionalProperties:
+                  items:
+                    type: string
+                  type: array
+                description: NetworkAttachments status of the deployment pods
                 type: object
               numberReady:
                 description: NumberReady of the ovs instances

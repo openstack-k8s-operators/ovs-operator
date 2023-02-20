@@ -33,6 +33,7 @@ func DaemonSet(
 	instance *v1beta1.OVS,
 	configHash string,
 	labels map[string]string,
+	annotations map[string]string,
 ) (*appsv1.DaemonSet, error) {
 
 	runAsUser := int64(0)
@@ -78,15 +79,13 @@ func DaemonSet(
 	envVars["OvnBridge"] = env.SetValue(instance.Spec.ExternalIDS.OvnBridge)
 	envVars["OvnRemote"] = env.SetValue(dbmap["SB"])
 	envVars["OvnEncapType"] = env.SetValue(instance.Spec.ExternalIDS.OvnEncapType)
+	envVars["PodNamespace"] = env.SetValue(instance.Namespace)
+	envVars["PodNetworksStatus"] = EnvDownwardAPI("metadata.annotations['k8s.v1.cni.cncf.io/networks-status']")
+	envVars["OvnEncapNetwork"] = env.SetValue(instance.Spec.NetworkAttachment)
 	envVars["OvnEncapIP"] = EnvDownwardAPI("status.podIP")
 	envVars["EnableChassisAsGateway"] = env.SetValue(fmt.Sprintf("%t", instance.Spec.ExternalIDS.EnableChassisAsGateway))
 	envVars["PhysicalNetworks"] = env.SetValue(getPhysicalNetworks(instance))
 	envVars["OvnHostName"] = EnvDownwardAPI("spec.nodeName")
-
-	networkList, err := getNetworksList(instance)
-	if err != nil {
-		return nil, err
-	}
 
 	daemonset := &appsv1.DaemonSet{
 		ObjectMeta: metav1.ObjectMeta{
@@ -99,10 +98,8 @@ func DaemonSet(
 			},
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels: labels,
-					Annotations: map[string]string{
-						"k8s.v1.cni.cncf.io/networks": networkList,
-					},
+					Labels:      labels,
+					Annotations: annotations,
 				},
 				Spec: corev1.PodSpec{
 					ServiceAccountName: ServiceAccountName,

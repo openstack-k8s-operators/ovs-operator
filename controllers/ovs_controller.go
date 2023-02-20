@@ -19,6 +19,7 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"sort"
 	"time"
 
 	"github.com/go-logr/logr"
@@ -39,6 +40,7 @@ import (
 	"github.com/openstack-k8s-operators/lib-common/modules/common/env"
 	"github.com/openstack-k8s-operators/lib-common/modules/common/helper"
 	"github.com/openstack-k8s-operators/lib-common/modules/common/labels"
+	nad "github.com/openstack-k8s-operators/lib-common/modules/common/networkattachment"
 	"github.com/openstack-k8s-operators/lib-common/modules/common/util"
 	ovnclient "github.com/openstack-k8s-operators/ovn-operator/api/v1beta1"
 	ovsv1beta1 "github.com/openstack-k8s-operators/ovs-operator/api/v1beta1"
@@ -69,9 +71,10 @@ func (r *OVSReconciler) GetLogger() logr.Logger {
 // +kubebuilder:rbac:groups=ovs.openstack.org,resources=ovs/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=ovs.openstack.org,resources=ovs/finalizers,verbs=update
 // +kubebuilder:rbac:groups=core,resources=configmaps,verbs=get;list;watch;create;update;patch;delete;
-// +kubebuilder:rbac:groups=k8s.cni.cncf.io,resources=*,verbs=*;
+// +kubebuilder:rbac:groups=core,resources=pods,verbs=get;list;
 // +kubebuilder:rbac:groups=apps,resources=daemonsets,verbs=create;delete;get;list;patch;update;watch
 // +kubebuilder:rbac:groups=ovn.openstack.org,resources=ovndbclusters,verbs=get;list;watch;
+// +kubebuilder:rbac:groups=k8s.cni.cncf.io,resources=network-attachment-definitions,verbs=create;delete;get;list;patch;update;watch
 
 // Reconcile - OVS
 func (r *OVSReconciler) Reconcile(ctx context.Context, req ctrl.Request) (result ctrl.Result, _err error) {
@@ -140,6 +143,13 @@ func (r *OVSReconciler) Reconcile(ctx context.Context, req ctrl.Request) (result
 
 		// Register overall status immediately to have an early feedback e.g. in the cli
 		return ctrl.Result{}, nil
+	}
+
+	if instance.Status.Hash == nil {
+		instance.Status.Hash = map[string]string{}
+	}
+	if instance.Status.NetworkAttachments == nil {
+		instance.Status.NetworkAttachments = map[string][]string{}
 	}
 
 	// Handle service delete
@@ -253,6 +263,49 @@ func (r *OVSReconciler) reconcileNormal(ctx context.Context, instance *ovsv1beta
 		common.AppSelector: ovs.ServiceName,
 	}
 
+	// Create additional Physical Network Attachments
+	networkAttachments, err := ovs.CreateAdditionalNetworks(ctx, helper, instance, serviceLabels)
+	if err != nil {
+		r.Log.Info(fmt.Sprintf("Failed to create additional networks: %s", err))
+		return ctrl.Result{}, err
+	}
+
+	// network to attach to
+	networkAttachmentsNoPhysNet := []string{}
+	if instance.Spec.NetworkAttachment != "" {
+		networkAttachments = append(networkAttachments, instance.Spec.NetworkAttachment)
+		networkAttachmentsNoPhysNet = append(networkAttachmentsNoPhysNet, instance.Spec.NetworkAttachment)
+	}
+	sort.Strings(networkAttachments)
+
+	for _, netAtt := range networkAttachments {
+		_, err = nad.GetNADWithName(ctx, helper, netAtt, instance.Namespace)
+		if err != nil {
+			if k8s_errors.IsNotFound(err) {
+				instance.Status.Conditions.Set(condition.FalseCondition(
+					condition.NetworkAttachmentsReadyCondition,
+					condition.RequestedReason,
+					condition.SeverityInfo,
+					condition.NetworkAttachmentsReadyWaitingMessage,
+					netAtt))
+				return ctrl.Result{RequeueAfter: time.Second * 10}, fmt.Errorf("network-attachment-definition %s not found", netAtt)
+			}
+			instance.Status.Conditions.Set(condition.FalseCondition(
+				condition.NetworkAttachmentsReadyCondition,
+				condition.ErrorReason,
+				condition.SeverityWarning,
+				condition.NetworkAttachmentsReadyErrorMessage,
+				err.Error()))
+			return ctrl.Result{}, err
+		}
+	}
+
+	serviceAnnotations, err := nad.CreateNetworksAnnotation(instance.Namespace, networkAttachments)
+	if err != nil {
+		return ctrl.Result{}, fmt.Errorf("failed to create network annotation from %s: %w",
+			networkAttachments, err)
+	}
+
 	// Handle service init
 	ctrlResult, err := r.reconcileInit(ctx, instance, helper)
 	if err != nil {
@@ -277,14 +330,8 @@ func (r *OVSReconciler) reconcileNormal(ctx context.Context, instance *ovsv1beta
 		return ctrlResult, nil
 	}
 
-	// Create additional Physical Network Attachements
-	if err := ovs.CreateAdditionalNetworks(ctx, instance, serviceLabels, r.Client); err != nil {
-		r.Log.Info(fmt.Sprintf("Failed to create additional networks: %s", err))
-		return ctrl.Result{}, err
-	}
-
 	// Define a new DaemonSet object
-	ovsDaemonSet, err := ovs.DaemonSet(ctx, helper, instance, inputHash, serviceLabels)
+	ovsDaemonSet, err := ovs.DaemonSet(ctx, helper, instance, inputHash, serviceLabels, serviceAnnotations)
 	if err != nil {
 		r.Log.Error(err, "Failed to create OVS DaemonSet")
 		return ctrl.Result{}, err
@@ -315,6 +362,27 @@ func (r *OVSReconciler) reconcileNormal(ctx context.Context, instance *ovsv1beta
 	instance.Status.DesiredNumberScheduled = dset.GetDaemonSet().Status.DesiredNumberScheduled
 	instance.Status.NumberReady = dset.GetDaemonSet().Status.NumberReady
 
+	// verify if network attachment matches expectations
+	networkReady, networkAttachmentStatus, err := nad.VerifyNetworkStatusFromAnnotation(ctx, helper, networkAttachmentsNoPhysNet, serviceLabels, instance.Status.NumberReady)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+
+	instance.Status.NetworkAttachments = networkAttachmentStatus
+	if networkReady {
+		instance.Status.Conditions.MarkTrue(condition.NetworkAttachmentsReadyCondition, condition.NetworkAttachmentsReadyMessage)
+	} else {
+		err := fmt.Errorf("not all pods have interfaces with ips as configured in NetworkAttachments: %s", instance.Spec.NetworkAttachment)
+		instance.Status.Conditions.Set(condition.FalseCondition(
+			condition.NetworkAttachmentsReadyCondition,
+			condition.ErrorReason,
+			condition.SeverityWarning,
+			condition.NetworkAttachmentsReadyErrorMessage,
+			err.Error()))
+
+		return ctrl.Result{}, err
+	}
+
 	if instance.IsReady() {
 		instance.Status.Conditions.MarkTrue(condition.DeploymentReadyCondition, condition.DeploymentReadyMessage)
 	}
@@ -342,11 +410,7 @@ func (r *OVSReconciler) generateServiceConfigMaps(
 			Namespace:    instance.Namespace,
 			Type:         util.TemplateTypeScripts,
 			InstanceType: instance.Kind,
-			AdditionalTemplate: map[string]string{
-				"init.sh":               "/bin/init.sh",
-				"start-ovsdb-server.sh": "/bin/start-ovsdb-server.sh",
-			},
-			Labels: cmLabels,
+			Labels:       cmLabels,
 		},
 	}
 	return configmap.EnsureConfigMaps(ctx, h, instance, cms, envVars)

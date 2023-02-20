@@ -17,6 +17,7 @@ import (
 	"fmt"
 
 	netattdefv1 "github.com/k8snetworkplumbingwg/network-attachment-definition-client/pkg/apis/k8s.cni.cncf.io/v1"
+	"github.com/openstack-k8s-operators/lib-common/modules/common/helper"
 	k8s_errors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -27,16 +28,17 @@ import (
 // CreateAdditionalNetworks - creates network attachement definitions based on the provided mappings
 func CreateAdditionalNetworks(
 	ctx context.Context,
+	h *helper.Helper,
 	instance *v1beta1.OVS,
 	labels map[string]string,
-	k8sClient client.Client,
-) error {
+) ([]string, error) {
 
 	var nad *netattdefv1.NetworkAttachmentDefinition
+	var networkAttachments []string
 
 	for physNet, interfaceName := range instance.Spec.NicMappings {
 		nad = &netattdefv1.NetworkAttachmentDefinition{}
-		err := k8sClient.Get(
+		err := h.GetClient().Get(
 			ctx,
 			client.ObjectKey{
 				Namespace: instance.Namespace,
@@ -46,7 +48,7 @@ func CreateAdditionalNetworks(
 		)
 		if err != nil {
 			if !k8s_errors.IsNotFound(err) {
-				return fmt.Errorf("can not get NetworkAttachmentDefinition %s/%s: %w",
+				return nil, fmt.Errorf("can not get NetworkAttachmentDefinition %s/%s: %w",
 					physNet, interfaceName, err)
 			}
 
@@ -63,11 +65,14 @@ func CreateAdditionalNetworks(
 				},
 			}
 			// Request object not found, lets create it
-			if err := k8sClient.Create(ctx, nad); err != nil {
-				return fmt.Errorf("can not create NetworkAttachmentDefinition %s/%s: %w",
+			if err := h.GetClient().Create(ctx, nad); err != nil {
+				return nil, fmt.Errorf("can not create NetworkAttachmentDefinition %s/%s: %w",
 					physNet, interfaceName, err)
 			}
 		}
+
+		networkAttachments = append(networkAttachments, physNet)
 	}
-	return nil
+
+	return networkAttachments, nil
 }

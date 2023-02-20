@@ -13,8 +13,6 @@ limitations under the License.
 package ovs
 
 import (
-	"encoding/json"
-	"fmt"
 	"strings"
 
 	"github.com/openstack-k8s-operators/lib-common/modules/common/env"
@@ -22,32 +20,6 @@ import (
 	"golang.org/x/exp/maps"
 	corev1 "k8s.io/api/core/v1"
 )
-
-type net struct {
-	Name      string
-	Namespace string
-}
-
-func getNetworksList(
-	instance *v1beta1.OVS,
-) (string, error) {
-	physNets := []net{}
-	for physNet := range instance.Spec.NicMappings {
-		physNets = append(
-			physNets,
-			net{
-				Name:      physNet,
-				Namespace: instance.Namespace,
-			},
-		)
-	}
-	networks, err := json.Marshal(physNets)
-	if err != nil {
-		return "", fmt.Errorf("failed to encode networks %s into json: %w",
-			physNets, err)
-	}
-	return string(networks), nil
-}
 
 func getPhysicalNetworks(
 	instance *v1beta1.OVS,
