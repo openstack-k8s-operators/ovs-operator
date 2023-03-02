@@ -50,6 +50,11 @@ type OVSSpec struct {
 	// +kubebuilder:validation:Optional
 	// NodeSelector to target subset of worker nodes running this service
 	NodeSelector map[string]string `json:"nodeSelector,omitempty"`
+
+	// +kubebuilder:validation:Optional
+	// NetworkAttachment is a NetworkAttachment resource name to expose the service to the given network.
+	// If specified the IP address of this network is used as the OvnEncapIP.
+	NetworkAttachment string `json:"networkAttachment"`
 }
 
 // OVSStatus defines the observed state of OVS
@@ -65,6 +70,9 @@ type OVSStatus struct {
 
 	// Map of hashes to track e.g. job status
 	Hash map[string]string `json:"hash,omitempty"`
+
+	// NetworkAttachments status of the deployment pods
+	NetworkAttachments map[string][]string `json:"networkAttachments,omitempty"`
 }
 
 //+kubebuilder:object:root=true

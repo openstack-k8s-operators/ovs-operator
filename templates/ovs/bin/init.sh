@@ -19,7 +19,11 @@ set -x
 OvnBridge=${OvnBridge:-"br-int"}
 OvnRemote=${OvnRemote:-"tcp:127.0.0.1:6642"}
 OvnEncapType=${OvnEncapType:-"geneve"}
-OvnEncapIP=${OvnEncapIP:-"127.0.0.1"}
+if [ -n "${OvnEncapNetwork}" ]; then
+  OvnEncapIP=$(/usr/local/bin/container-scripts/get_net_ip ${OvnEncapNetwork})
+else
+  OvnEncapIP=${OvnEncapIP:-"127.0.0.1"}
+fi
 EnableChassisAsGateway=${EnableChassisAsGateway:-false}
 PhysicalNetworks=${PhysicalNetworks:-""}
 OvnHostName=${OvnHostName:-""}

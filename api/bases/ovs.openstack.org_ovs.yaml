@@ -56,6 +56,11 @@ spec:
                 - ovn-bridge
                 - system-id
                 type: object
+              networkAttachment:
+                description: NetworkAttachment is a NetworkAttachment resource name
+                  to expose the service to the given network. If specified the IP
+                  address of this network is used as the OvnEncapIP.
+                type: string
               nicMappings:
                 additionalProperties:
                   type: string
@@ -78,6 +83,26 @@ spec:
                 description: Resources - Compute Resources required by this service
                   (Limits/Requests). https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
                 properties:
+                  claims:
+                    description: "Claims lists the names of resources, defined in
+                      spec.resourceClaims, that are used by this container. \n This
+                      is an alpha field and requires enabling the DynamicResourceAllocation
+                      feature gate. \n This field is immutable."
+                    items:
+                      description: ResourceClaim references one entry in PodSpec.ResourceClaims.
+                      properties:
+                        name:
+                          description: Name must match the name of one entry in pod.spec.resourceClaims
+                            of the Pod where this field is used. It makes that resource
+                            available inside a container.
+                          type: string
+                      required:
+                      - name
+                      type: object
+                    type: array
+                    x-kubernetes-list-map-keys:
+                    - name
+                    x-kubernetes-list-type: map
                   limits:
                     additionalProperties:
                       anyOf:
@@ -157,6 +182,13 @@ spec:
                 additionalProperties:
                   type: string
                 description: Map of hashes to track e.g. job status
+                type: object
+              networkAttachments:
+                additionalProperties:
+                  items:
+                    type: string
+                  type: array
+                description: NetworkAttachments status of the deployment pods
                 type: object
               numberReady:
                 description: NumberReady of the ovs instances
