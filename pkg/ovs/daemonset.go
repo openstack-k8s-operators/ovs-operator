@@ -18,6 +18,7 @@ import (
 
 	"github.com/openstack-k8s-operators/lib-common/modules/common/env"
 	"github.com/openstack-k8s-operators/lib-common/modules/common/helper"
+	nad "github.com/openstack-k8s-operators/lib-common/modules/common/networkattachment"
 	"github.com/openstack-k8s-operators/ovs-operator/api/v1beta1"
 
 	ovnclient "github.com/openstack-k8s-operators/ovn-operator/api/v1beta1"
@@ -79,10 +80,11 @@ func DaemonSet(
 	envVars["OvnBridge"] = env.SetValue(instance.Spec.ExternalIDS.OvnBridge)
 	envVars["OvnRemote"] = env.SetValue(dbmap["SB"])
 	envVars["OvnEncapType"] = env.SetValue(instance.Spec.ExternalIDS.OvnEncapType)
-	envVars["PodNamespace"] = env.SetValue(instance.Namespace)
-	envVars["PodNetworksStatus"] = EnvDownwardAPI("metadata.annotations['k8s.v1.cni.cncf.io/networks-status']")
-	envVars["OvnEncapNetwork"] = env.SetValue(instance.Spec.NetworkAttachment)
-	envVars["OvnEncapIP"] = EnvDownwardAPI("status.podIP")
+	if instance.Spec.NetworkAttachment == "" {
+		envVars["OvnEncapNIC"] = env.SetValue("eth0")
+	} else {
+		envVars["OvnEncapNIC"] = env.SetValue(nad.GetNetworkIFName(instance.Spec.NetworkAttachment))
+	}
 	envVars["EnableChassisAsGateway"] = env.SetValue(fmt.Sprintf("%t", instance.Spec.ExternalIDS.EnableChassisAsGateway))
 	envVars["PhysicalNetworks"] = env.SetValue(getPhysicalNetworks(instance))
 	envVars["OvnHostName"] = EnvDownwardAPI("spec.nodeName")
