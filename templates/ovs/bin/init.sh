@@ -13,20 +13,17 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-set -x
+set -ex
 
 # Configs are obtained from ENV variables.
 OvnBridge=${OvnBridge:-"br-int"}
 OvnRemote=${OvnRemote:-"tcp:127.0.0.1:6642"}
 OvnEncapType=${OvnEncapType:-"geneve"}
-if [ -n "${OvnEncapNetwork}" ]; then
-  OvnEncapIP=$(/usr/local/bin/container-scripts/get_net_ip ${OvnEncapNetwork})
-else
-  OvnEncapIP=${OvnEncapIP:-"127.0.0.1"}
-fi
+OvnEncapNIC=${OvnEncapNIC:="eth0"}
 EnableChassisAsGateway=${EnableChassisAsGateway:-false}
 PhysicalNetworks=${PhysicalNetworks:-""}
 OvnHostName=${OvnHostName:-""}
+OvnEncapIP=$(ip -o addr show dev ${OvnEncapNIC} scope global | awk '{print $4}' | cut -d/ -f1)
 
 function wait_for_ovsdb_server {
     while true; do
