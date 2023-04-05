@@ -1,0 +1,17 @@
+# This patch inject custom ENV settings to the manager container
+# Used to set our default image locations
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: controller-manager
+  namespace: system
+spec:
+  template:
+    spec:
+      containers:
+      - name: manager
+        env:
+        - name: OVS_IMAGE_URL_DEFAULT
+          value: quay.io/tripleozedcentos9/openstack-ovn-base:current-tripleo
+        - name: OVN_IMAGE_URL_DEFAULT
+          value: quay.io/tripleozedcentos9/openstack-ovn-controller:current-tripleo
