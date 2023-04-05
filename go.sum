@@ -226,8 +226,6 @@ github.com/openstack-k8s-operators/infra-operator/apis v0.0.0-20230220105454-15b
 github.com/openstack-k8s-operators/infra-operator/apis v0.0.0-20230220105454-15b5585e4e29/go.mod h1:5kG0Ct412tO3fNkZ5b3/BwwSsV7LkSNfOB/apUlbMJI=
 github.com/openstack-k8s-operators/lib-common/modules/common v0.0.0-20230309154649-7d7c02030c78 h1:pXapWJYRuxVMjVsaLkBOUl31Xauyhf+jzGxmaMH6eAM=
 github.com/openstack-k8s-operators/lib-common/modules/common v0.0.0-20230309154649-7d7c02030c78/go.mod h1:wDUzrnAhtC0O99PYR8qQWQoGJzVQwGnfGepKzExCVk8=
-github.com/openstack-k8s-operators/ovn-operator/api v0.0.0-20221221083334-f77d76772a0e h1:G5s0MasnPwIOogyPK5Ce4F+2mxvD/+sJQUaC20BDeJk=
-github.com/openstack-k8s-operators/ovn-operator/api v0.0.0-20221221083334-f77d76772a0e/go.mod h1:GUQ966Lr4rg+XnIYlYO+YX+rMg7OmNzYYvDk4uSIQVU=
 github.com/openstack-k8s-operators/ovn-operator/api v0.0.0-20230324110832-22157b6770f3 h1:7cy1GXiMG1BBkxaj+3nGIwcGDOTcMrEi+8IJ9aHe1b4=
 github.com/openstack-k8s-operators/ovn-operator/api v0.0.0-20230324110832-22157b6770f3/go.mod h1:vsHUVpBJYuphy753SLEKvNKX2FgtauSrxsxM3CeuDkM=
 github.com/pkg/errors v0.8.0/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
