@@ -116,7 +116,7 @@ type OVSExternalIDs struct {
 	// +kubebuilder:default="geneve"
 	// +kubebuilder:validation:Enum={"geneve","vxlan"}
 	// OvnEncapType - geneve or vxlan
-	OvnEncapType string `json:"ovn-encap-type,omitempty"`
+	OvnEncapType string `json:"ovn-encap-type"`
 
 	EnableChassisAsGateway bool `json:"enable-chassis-as-gateway,omitempty" optional:"true"`
 }
