@@ -287,6 +287,12 @@ golangci: get-ci-tools
 golint: get-ci-tools
 	PATH=$(GOBIN):$(PATH); $(CI_TOOLS_REPO_DIR)/test-runner/golint.sh
 
+# Run go mod tidy against code
+.PHONY: tidy
+tidy: ## Run go mod tidy on every mod file in the repo
+	go mod tidy
+	cd ./api && go mod tidy
+
 .PHONY: gowork
 gowork: ## Generate go.work file to support our multi module repository
 	test -f go.work || go work init

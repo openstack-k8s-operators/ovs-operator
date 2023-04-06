@@ -3,7 +3,7 @@
 #
 # No OVS CR
 # No DaemonSet CR
- 
+
 apiVersion: ovs.openstack.org/v1beta1
 kind: OVS
 metadata:
