@@ -19,6 +19,7 @@ package main
 import (
 	"flag"
 	"os"
+	"strings"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
@@ -36,6 +37,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
 	ovnv1beta1 "github.com/openstack-k8s-operators/ovn-operator/api/v1beta1"
+
 	ovsv1beta1 "github.com/openstack-k8s-operators/ovs-operator/api/v1beta1"
 	"github.com/openstack-k8s-operators/ovs-operator/controllers"
 	//+kubebuilder:scaffold:imports
@@ -115,6 +117,22 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "OVS")
 		os.Exit(1)
 	}
+
+	// Acquire environmental defaults and initialize OVS defaults with them
+	ovsDefaults := ovsv1beta1.OvsDefaults{
+		OvsContainerImageURL: os.Getenv("OVS_IMAGE_URL_DEFAULT"),
+		OvnContainerImageURL: os.Getenv("OVN_IMAGE_URL_DEFAULT"),
+	}
+
+	ovsv1beta1.SetupOvsDefaults(ovsDefaults)
+
+	if strings.ToLower(os.Getenv("ENABLE_WEBHOOKS")) != "false" {
+		if err = (&ovsv1beta1.OVS{}).SetupWebhookWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create webhook", "webhook", "OVS")
+			os.Exit(1)
+		}
+	}
+
 	//+kubebuilder:scaffold:builder
 
 	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {

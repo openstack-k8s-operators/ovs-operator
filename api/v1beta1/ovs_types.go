@@ -28,14 +28,12 @@ type OVSSpec struct {
 	// +kubebuilder:validation:Optional
 	ExternalIDS OVSExternalIDs `json:"external-ids"`
 
-	// +kubebuilder:validation:Optional
-	// +kubebuilder:default="quay.io/tripleozedcentos9/openstack-ovn-base:current-tripleo"
-	// Image used for the ovsdb-server and ovs-vswitchd containers
+	// +kubebuilder:validation:Required
+	// Image used for the ovsdb-server and ovs-vswitchd containers (will be set to environmental default if empty)
 	OvsContainerImage string `json:"ovsContainerImage"`
 
-	// +kubebuilder:validation:Optional
-	// +kubebuilder:default="quay.io/tripleozedcentos9/openstack-ovn-controller:current-tripleo"
-	// Image used for the ovn-controller container
+	// +kubebuilder:validation:Required
+	// Image used for the ovn-controller container (will be set to environmental default if empty)
 	OvnContainerImage string `json:"ovnContainerImage"`
 
 	// +kubebuilder:validation:Optional

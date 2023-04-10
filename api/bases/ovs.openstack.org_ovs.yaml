@@ -72,12 +72,12 @@ spec:
                   this service
                 type: object
               ovnContainerImage:
-                default: quay.io/tripleozedcentos9/openstack-ovn-controller:current-tripleo
-                description: Image used for the ovn-controller container
+                description: Image used for the ovn-controller container (will be
+                  set to environmental default if empty)
                 type: string
               ovsContainerImage:
-                default: quay.io/tripleozedcentos9/openstack-ovn-base:current-tripleo
                 description: Image used for the ovsdb-server and ovs-vswitchd containers
+                  (will be set to environmental default if empty)
                 type: string
               resources:
                 description: Resources - Compute Resources required by this service
@@ -126,6 +126,9 @@ spec:
                       to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                     type: object
                 type: object
+            required:
+            - ovnContainerImage
+            - ovsContainerImage
             type: object
           status:
             description: OVSStatus defines the observed state of OVS

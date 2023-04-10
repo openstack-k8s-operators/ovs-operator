@@ -114,7 +114,9 @@ build: generate fmt vet ## Build manager binary.
 	go build -o bin/manager main.go
 
 .PHONY: run
+run: export ENABLE_WEBHOOKS?=false
 run: manifests generate fmt vet ## Run a controller from your host.
+	/bin/bash hack/clean_local_webhook.sh
 	go run ./main.go
 
 .PHONY: docker-build
@@ -185,7 +187,7 @@ KUSTOMIZE_INSTALL_SCRIPT ?= "https://raw.githubusercontent.com/kubernetes-sigs/k
 .PHONY: kustomize
 kustomize: $(KUSTOMIZE) ## Download kustomize locally if necessary.
 $(KUSTOMIZE): $(LOCALBIN)
-	curl -s $(KUSTOMIZE_INSTALL_SCRIPT) | bash -s -- $(subst v,,$(KUSTOMIZE_VERSION)) $(LOCALBIN)
+	test -s $(LOCALBIN)/kustomize || { curl -s $(KUSTOMIZE_INSTALL_SCRIPT) | bash -s -- $(subst v,,$(KUSTOMIZE_VERSION)) $(LOCALBIN); }
 
 .PHONY: controller-gen
 controller-gen: $(CONTROLLER_GEN) ## Download controller-gen locally if necessary.
@@ -303,3 +305,18 @@ gowork: ## Generate go.work file to support our multi module repository
 operator-lint: gowork ## Runs operator-lint
 	GOBIN=$(LOCALBIN) go install github.com/gibizer/operator-lint@latest
 	go vet -vettool=$(LOCALBIN)/operator-lint ./... ./api/...
+
+# Used for webhook testing
+# Please ensure the ovs-controller-manager deployment and
+# webhook definitions are removed from the csv before running
+# this. Also, cleanup the webhook configuration for local testing
+# before deplying with olm again.
+# $oc delete -n openstack validatingwebhookconfiguration/vovs.kb.io
+# $oc delete -n openstack mutatingwebhookconfiguration/movs.kb.io
+SKIP_CERT ?=false
+.PHONY: run-with-webhook
+run-with-webhook: export OVS_IMAGE_URL_DEFAULT=quay.io/tripleozedcentos9/openstack-ovn-base:current-tripleo
+run-with-webhook: export OVN_IMAGE_URL_DEFAULT=quay.io/tripleozedcentos9/openstack-ovn-controller:current-tripleo
+run-with-webhook: manifests generate fmt vet ## Run a controller from your host.
+	/bin/bash hack/configure_local_webhook.sh
+	go run ./main.go
