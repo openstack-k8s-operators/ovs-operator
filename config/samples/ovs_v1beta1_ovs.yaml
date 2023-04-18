@@ -3,8 +3,8 @@ kind: OVS
 metadata:
   name: openvswitch
 spec:
-  ovsContainerImage: "quay.io/tripleozedcentos9/openstack-ovn-base:current-tripleo"
-  ovnContainerImage: "quay.io/tripleozedcentos9/openstack-ovn-controller:current-tripleo"
+  ovsContainerImage: "quay.io/podified-antelope-centos9/openstack-ovn-base:current-podified"
+  ovnContainerImage: "quay.io/podified-antelope-centos9/openstack-ovn-controller:current-podified"
   external-ids:
     system-id: "random"
     ovn-bridge: "br-int"

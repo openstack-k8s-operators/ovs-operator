@@ -12,6 +12,6 @@ spec:
       - name: manager
         env:
         - name: OVS_IMAGE_URL_DEFAULT
-          value: quay.io/tripleozedcentos9/openstack-ovn-base:current-tripleo
+          value: quay.io/podified-antelope-centos9/openstack-ovn-base:current-podified
         - name: OVN_IMAGE_URL_DEFAULT
-          value: quay.io/tripleozedcentos9/openstack-ovn-controller:current-tripleo
+          value: quay.io/podified-antelope-centos9/openstack-ovn-controller:current-podified
