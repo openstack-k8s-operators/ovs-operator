@@ -123,3 +123,18 @@ type OVSExternalIDs struct {
 
 	EnableChassisAsGateway bool `json:"enable-chassis-as-gateway,omitempty" optional:"true"`
 }
+
+// RbacConditionsSet - set the conditions for the rbac object
+func (instance OVS) RbacConditionsSet(c *condition.Condition) {
+	instance.Status.Conditions.Set(c)
+}
+
+// RbacNamespace - return the namespace
+func (instance OVS) RbacNamespace() string {
+	return instance.Namespace
+}
+
+// RbacResourceName - return the name to be used for rbac objects (serviceaccount, role, rolebinding)
+func (instance OVS) RbacResourceName() string {
+	return "ovs-" + instance.Name
+}

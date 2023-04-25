@@ -85,7 +85,7 @@ func ConfigJob(
 					Template: corev1.PodTemplateSpec{
 						Spec: corev1.PodSpec{
 							RestartPolicy:      "OnFailure",
-							ServiceAccountName: ServiceAccountName,
+							ServiceAccountName: instance.RbacResourceName(),
 							Containers: []corev1.Container{
 								{
 									Name:  instance.Name + "-ovn-configuration-sync",
