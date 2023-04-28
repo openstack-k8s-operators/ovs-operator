@@ -13,12 +13,15 @@ limitations under the License.
 package ovs
 
 import (
+	"context"
+	"fmt"
 	"strings"
 
 	"github.com/openstack-k8s-operators/lib-common/modules/common/env"
 	"github.com/openstack-k8s-operators/ovs-operator/api/v1beta1"
 	"golang.org/x/exp/maps"
 	corev1 "k8s.io/api/core/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 func getPhysicalNetworks(
@@ -31,6 +34,33 @@ func getPhysicalNetworks(
 	return strings.Join(
 		maps.Keys(instance.Spec.NicMappings), " ",
 	)
+}
+
+func getOvsPodsNodes(
+	ctx context.Context,
+	k8sClient client.Client,
+	instance *v1beta1.OVS,
+) ([]string, error) {
+
+	var nodes []string
+	podList := &corev1.PodList{}
+	podListOpts := &client.ListOptions{
+		Namespace: instance.Namespace,
+	}
+	client.MatchingLabels{
+		"service": ServiceName,
+	}.ApplyToList(podListOpts)
+
+	if err := k8sClient.List(ctx, podList, podListOpts); err != nil {
+		err = fmt.Errorf("error listing pods for instance %s: %w", instance.Name, err)
+		return []string{}, err
+	}
+
+	for _, pod := range podList.Items {
+		nodes = append(nodes, pod.Spec.NodeName)
+	}
+
+	return nodes, nil
 }
 
 // EnvDownwardAPI - set env from FieldRef->FieldPath, e.g. status.podIP

@@ -13,7 +13,6 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-set -ex
 
 # Configs are obtained from ENV variables.
 OvnBridge=${OvnBridge:-"br-int"}
@@ -74,5 +73,9 @@ function configure_physical_networks {
 
 
 wait_for_ovsdb_server
+
+# From now on, we should exit immediatelly when any command exits with non-zero status
+set -ex
+
 configure_external_ids
 configure_physical_networks

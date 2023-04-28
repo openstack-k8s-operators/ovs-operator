@@ -23,6 +23,11 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+const (
+	// OvnConfigHash - OvnConfigHash key
+	OvnConfigHash = "OvnConfigHash"
+)
+
 // OVSSpec defines the desired state of OVS
 type OVSSpec struct {
 	// +kubebuilder:validation:Optional
