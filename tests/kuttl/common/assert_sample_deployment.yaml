@@ -16,8 +16,8 @@ spec:
     ovn-bridge: br-int
     ovn-encap-type: geneve
     system-id: random
-  ovnContainerImage: quay.io/tripleozedcentos9/openstack-ovn-controller:current-tripleo
-  ovsContainerImage: quay.io/tripleozedcentos9/openstack-ovn-base:current-tripleo
+  ovnContainerImage: quay.io/podified-antelope-centos9/openstack-ovn-controller:current-podified
+  ovsContainerImage: quay.io/podified-antelope-centos9/openstack-ovn-base:current-podified
 status:
   desiredNumberScheduled: 1
   numberReady: 1
@@ -40,7 +40,7 @@ spec:
       containers:
       - command:
         - /usr/local/bin/container-scripts/start-ovsdb-server.sh
-        image: quay.io/tripleozedcentos9/openstack-ovn-base:current-tripleo
+        image: quay.io/podified-antelope-centos9/openstack-ovn-base:current-podified
         imagePullPolicy: IfNotPresent
         lifecycle:
           preStop:
@@ -76,7 +76,7 @@ spec:
         - --mlockall
         command:
         - /usr/sbin/ovs-vswitchd
-        image: quay.io/tripleozedcentos9/openstack-ovn-base:current-tripleo
+        image: quay.io/podified-antelope-centos9/openstack-ovn-base:current-podified
         imagePullPolicy: IfNotPresent
         lifecycle:
           preStop:
@@ -112,7 +112,7 @@ spec:
         command:
         - /bin/bash
         - -c
-        image: quay.io/tripleozedcentos9/openstack-ovn-controller:current-tripleo
+        image: quay.io/podified-antelope-centos9/openstack-ovn-controller:current-podified
         imagePullPolicy: IfNotPresent
         lifecycle:
           preStop:
@@ -166,7 +166,7 @@ spec:
   containers:
   - command:
     - /usr/local/bin/container-scripts/start-ovsdb-server.sh
-    image: quay.io/tripleozedcentos9/openstack-ovn-base:current-tripleo
+    image: quay.io/podified-antelope-centos9/openstack-ovn-base:current-podified
     imagePullPolicy: IfNotPresent
     lifecycle:
       preStop:
@@ -202,7 +202,7 @@ spec:
     - --mlockall
     command:
     - /usr/sbin/ovs-vswitchd
-    image: quay.io/tripleozedcentos9/openstack-ovn-base:current-tripleo
+    image: quay.io/podified-antelope-centos9/openstack-ovn-base:current-podified
     imagePullPolicy: IfNotPresent
     lifecycle:
       preStop:
@@ -238,7 +238,7 @@ spec:
     command:
     - /bin/bash
     - -c
-    image: quay.io/tripleozedcentos9/openstack-ovn-controller:current-tripleo
+    image: quay.io/podified-antelope-centos9/openstack-ovn-controller:current-podified
     imagePullPolicy: IfNotPresent
     lifecycle:
       preStop:
