@@ -61,7 +61,7 @@ func ConfigJob(
 	envVars["KOLLA_CONFIG_FILE"] = env.SetValue(KollaConfigAPI)
 	envVars["KOLLA_CONFIG_STRATEGY"] = env.SetValue("COPY_ALWAYS")
 	envVars["OvnBridge"] = env.SetValue(instance.Spec.ExternalIDS.OvnBridge)
-	envVars["OvnRemote"] = env.SetValue(dbmap["SB"])
+	envVars["OvnRemote"] = env.SetValue(dbmap["internal-SB"])
 	envVars["OvnEncapType"] = env.SetValue(instance.Spec.ExternalIDS.OvnEncapType)
 	envVars["PodNamespace"] = env.SetValue(instance.Namespace)
 	envVars["PodNetworksStatus"] = EnvDownwardAPI("metadata.annotations['k8s.v1.cni.cncf.io/networks-status']")
