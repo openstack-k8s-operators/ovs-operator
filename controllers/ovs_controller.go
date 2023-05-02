@@ -42,6 +42,7 @@ import (
 	"github.com/openstack-k8s-operators/lib-common/modules/common/job"
 	"github.com/openstack-k8s-operators/lib-common/modules/common/labels"
 	nad "github.com/openstack-k8s-operators/lib-common/modules/common/networkattachment"
+	common_rbac "github.com/openstack-k8s-operators/lib-common/modules/common/rbac"
 	"github.com/openstack-k8s-operators/lib-common/modules/common/util"
 	ovnclient "github.com/openstack-k8s-operators/ovn-operator/api/v1beta1"
 	ovsv1beta1 "github.com/openstack-k8s-operators/ovs-operator/api/v1beta1"
@@ -49,6 +50,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
+	rbacv1 "k8s.io/api/rbac/v1"
 )
 
 // OVSReconciler reconciles a OVS object
@@ -78,6 +80,14 @@ func (r *OVSReconciler) GetLogger() logr.Logger {
 // +kubebuilder:rbac:groups=batch,resources=jobs,verbs=get;list;watch;create;patch;update;delete;
 // +kubebuilder:rbac:groups=ovn.openstack.org,resources=ovndbclusters,verbs=get;list;watch;
 // +kubebuilder:rbac:groups=k8s.cni.cncf.io,resources=network-attachment-definitions,verbs=create;delete;get;list;patch;update;watch
+
+// service account, role, rolebinding
+// +kubebuilder:rbac:groups="",resources=serviceaccounts,verbs=get;list;watch;create;update
+// +kubebuilder:rbac:groups="rbac.authorization.k8s.io",resources=roles,verbs=get;list;watch;create;update
+// +kubebuilder:rbac:groups="rbac.authorization.k8s.io",resources=rolebindings,verbs=get;list;watch;create;update
+// service account permissions that are needed to grant permission to the above
+// +kubebuilder:rbac:groups="security.openshift.io",resourceNames=anyuid;privileged,resources=securitycontextconstraints,verbs=use
+// +kubebuilder:rbac:groups="",resources=pods,verbs=create;delete;get;list;patch;update;watch
 
 // Reconcile - OVS
 func (r *OVSReconciler) Reconcile(ctx context.Context, req ctrl.Request) (result ctrl.Result, _err error) {
@@ -140,6 +150,9 @@ func (r *OVSReconciler) Reconcile(ctx context.Context, req ctrl.Request) (result
 			condition.UnknownCondition(condition.InputReadyCondition, condition.InitReason, condition.InputReadyInitMessage),
 			condition.UnknownCondition(condition.ServiceConfigReadyCondition, condition.InitReason, condition.ServiceConfigReadyInitMessage),
 			condition.UnknownCondition(condition.DeploymentReadyCondition, condition.InitReason, condition.DeploymentReadyInitMessage),
+			condition.UnknownCondition(condition.ServiceAccountReadyCondition, condition.InitReason, condition.ServiceAccountReadyInitMessage),
+			condition.UnknownCondition(condition.RoleReadyCondition, condition.InitReason, condition.RoleReadyInitMessage),
+			condition.UnknownCondition(condition.RoleBindingReadyCondition, condition.InitReason, condition.RoleBindingReadyInitMessage),
 		)
 
 		instance.Status.Conditions.Init(&cl)
@@ -218,6 +231,27 @@ func (r *OVSReconciler) reconcileUpgrade(ctx context.Context, instance *ovsv1bet
 func (r *OVSReconciler) reconcileNormal(ctx context.Context, instance *ovsv1beta1.OVS, helper *helper.Helper) (ctrl.Result, error) {
 	r.Log.Info("Reconciling Service")
 
+	// Service account, role, binding
+	rbacRules := []rbacv1.PolicyRule{
+		{
+			APIGroups:     []string{"security.openshift.io"},
+			ResourceNames: []string{"anyuid", "privileged"},
+			Resources:     []string{"securitycontextconstraints"},
+			Verbs:         []string{"use"},
+		},
+		{
+			APIGroups: []string{""},
+			Resources: []string{"pods"},
+			Verbs:     []string{"create", "get", "list", "watch", "update", "patch", "delete"},
+		},
+	}
+	rbacResult, err := common_rbac.ReconcileRbac(ctx, helper, instance, rbacRules)
+	if err != nil {
+		return rbacResult, err
+	} else if (rbacResult != ctrl.Result{}) {
+		return rbacResult, nil
+	}
+
 	// ConfigMap
 	configMapVars := make(map[string]env.Setter)
 
@@ -227,7 +261,7 @@ func (r *OVSReconciler) reconcileNormal(ctx context.Context, instance *ovsv1beta
 	// create Configmap required for ovs input
 	// - %-scripts configmap holding scripts to e.g. bootstrap the service
 	//
-	err := r.generateServiceConfigMaps(ctx, helper, instance, &configMapVars)
+	err = r.generateServiceConfigMaps(ctx, helper, instance, &configMapVars)
 	if err != nil {
 		instance.Status.Conditions.Set(condition.FalseCondition(
 			condition.ServiceConfigReadyCondition,

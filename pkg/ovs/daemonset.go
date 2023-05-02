@@ -80,7 +80,7 @@ func DaemonSet(
 					Annotations: annotations,
 				},
 				Spec: corev1.PodSpec{
-					ServiceAccountName: ServiceAccountName,
+					ServiceAccountName: instance.RbacResourceName(),
 					Containers: []corev1.Container{
 						// ovsdb-server container
 						{
