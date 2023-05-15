@@ -21,7 +21,6 @@ import (
 	"crypto/tls"
 	"fmt"
 	"net"
-	"os"
 	"path/filepath"
 	"testing"
 	"time"
@@ -169,11 +168,7 @@ var _ = BeforeSuite(func() {
 	Expect(err).ToNot(HaveOccurred())
 
 	// Acquire environmental defaults and initialize operator defaults with them
-	ovsDefaults := ovsv1.OvsDefaults{
-		OvsContainerImageURL: os.Getenv("OVS_IMAGE_URL_DEFAULT"),
-		OvnContainerImageURL: os.Getenv("OVN_IMAGE_URL_DEFAULT"),
-	}
-	ovsv1.SetupOvsDefaults(ovsDefaults)
+	ovsv1.SetupDefaults()
 
 	err = (&ovsv1.OVS{}).SetupWebhookWithManager(k8sManager)
 	Expect(err).NotTo(HaveOccurred())
