@@ -118,13 +118,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Acquire environmental defaults and initialize OVS defaults with them
-	ovsDefaults := ovsv1beta1.OvsDefaults{
-		OvsContainerImageURL: os.Getenv("OVS_IMAGE_URL_DEFAULT"),
-		OvnContainerImageURL: os.Getenv("OVN_IMAGE_URL_DEFAULT"),
-	}
-
-	ovsv1beta1.SetupOvsDefaults(ovsDefaults)
+	// Acquire environmental defaults and initialize operator defaults with them
+	ovsv1beta1.SetupDefaults()
 
 	if strings.ToLower(os.Getenv("ENABLE_WEBHOOKS")) != "false" {
 		if err = (&ovsv1beta1.OVS{}).SetupWebhookWithManager(mgr); err != nil {

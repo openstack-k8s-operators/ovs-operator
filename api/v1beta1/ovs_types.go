@@ -18,6 +18,7 @@ package v1beta1
 
 import (
 	"github.com/openstack-k8s-operators/lib-common/modules/common/condition"
+	"github.com/openstack-k8s-operators/lib-common/modules/common/util"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -26,6 +27,13 @@ import (
 const (
 	// OvnConfigHash - OvnConfigHash key
 	OvnConfigHash = "OvnConfigHash"
+
+	// Container image fall-back defaults
+
+	// OvsContainerImage is the fall-back container image for Ovs
+	OvsContainerImage = "quay.io/podified-antelope-centos9/openstack-ovn-base:current-podified"
+	// OvnContainerImage is the fall-back container image for Ovn
+	OvnContainerImage = "quay.io/podified-antelope-centos9/openstack-ovn-controller:current-podified"
 )
 
 // OVSSpec defines the desired state of OVS
@@ -137,4 +145,15 @@ func (instance OVS) RbacNamespace() string {
 // RbacResourceName - return the name to be used for rbac objects (serviceaccount, role, rolebinding)
 func (instance OVS) RbacResourceName() string {
 	return "ovs-" + instance.Name
+}
+
+// SetupDefaults - initializes any CRD field defaults based on environment variables (the defaulting mechanism itself is implemented via webhooks)
+func SetupDefaults() {
+	// Acquire environmental defaults and initialize OVS defaults with them
+	ovsDefaults := OvsDefaults{
+		OvsContainerImageURL: util.GetEnvVar("OVS_IMAGE_URL_DEFAULT", OvsContainerImage),
+		OvnContainerImageURL: util.GetEnvVar("OVN_IMAGE_URL_DEFAULT", OvnContainerImage),
+	}
+
+	SetupOvsDefaults(ovsDefaults)
 }

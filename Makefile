@@ -108,8 +108,6 @@ PROCS?=$(shell expr $(shell nproc --ignore 2) / 2)
 PROC_CMD = --procs ${PROCS}
 
 .PHONY: test
-test: export OVS_IMAGE_URL_DEFAULT=quay.io/podified-antelope-centos9/openstack-ovn-base:current-podified
-test: export OVN_IMAGE_URL_DEFAULT=quay.io/podified-antelope-centos9/openstack-ovn-controller:current-podified
 test: manifests generate fmt vet envtest ginkgo ## Run tests.
 	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) -v debug --bin-dir $(LOCALBIN) use $(ENVTEST_K8S_VERSION) -p path)" OPERATOR_TEMPLATES="$(PWD)/templates" $(GINKGO) --trace --cover --coverpkg=../../pkg/ovs,../../controllers,../../api/v1beta1 --coverprofile cover.out --covermode=atomic --randomize-all ${PROC_CMD} $(GINKGO_ARGS) ./tests/...
 
@@ -326,8 +324,6 @@ operator-lint: gowork ## Runs operator-lint
 # $oc delete -n openstack mutatingwebhookconfiguration/movs.kb.io
 SKIP_CERT ?=false
 .PHONY: run-with-webhook
-run-with-webhook: export OVS_IMAGE_URL_DEFAULT=quay.io/podified-antelope-centos9/openstack-ovn-base:current-podified
-run-with-webhook: export OVN_IMAGE_URL_DEFAULT=quay.io/podified-antelope-centos9/openstack-ovn-controller:current-podified
 run-with-webhook: manifests generate fmt vet ## Run a controller from your host.
 	/bin/bash hack/configure_local_webhook.sh
 	go run ./main.go
