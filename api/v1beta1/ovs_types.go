@@ -114,8 +114,8 @@ func init() {
 // IsReady - returns true if service is ready to server requests
 func (instance OVS) IsReady() bool {
 	// Ready when:
-	// there is at least a single pod to running OVS and ovn-controller
-	return instance.Status.NumberReady == instance.Status.DesiredNumberScheduled
+	// OVS is reconciled successfully
+	return instance.Status.Conditions.IsTrue(condition.ReadyCondition)
 }
 
 // OVSExternalIDs is a set of configuration options for OVS external-ids table
