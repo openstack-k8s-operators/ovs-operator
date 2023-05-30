@@ -428,7 +428,6 @@ func (r *OVSReconciler) reconcileNormal(ctx context.Context, instance *ovsv1beta
 	// create OVN Config Job - start
 	if instance.IsReady() {
 		jobsDef, err := ovs.ConfigJob(ctx, helper, r.Client, instance, serviceLabels)
-		configChanged := false
 		if err != nil {
 			r.Log.Error(err, "Failed to create OVN controller configuration Job")
 			return ctrl.Result{}, err
@@ -469,18 +468,9 @@ func (r *OVSReconciler) reconcileNormal(ctx context.Context, instance *ovsv1beta
 				return ctrl.Result{}, err
 			}
 			if configJob.HasChanged() {
-				configChanged = true
 				instance.Status.Hash[configHashKey] = configJob.GetHash()
 				r.Log.Info(fmt.Sprintf("Job %s hash added - %s", jobDef.Name, instance.Status.Hash[configHashKey]))
 			}
-		}
-		if configChanged {
-			defer func() {
-				if err := helper.PatchInstance(ctx, instance); err != nil {
-					r.Log.Error(err, fmt.Sprintf("Failed to patch status of %s", instance.Name))
-					return
-				}
-			}()
 		}
 		instance.Status.Conditions.MarkTrue(condition.ServiceConfigReadyCondition, condition.ServiceConfigReadyMessage)
 	} else {
