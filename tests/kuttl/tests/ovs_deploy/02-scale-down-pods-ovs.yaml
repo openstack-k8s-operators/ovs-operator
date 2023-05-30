@@ -1,5 +1,0 @@
-apiVersion: kuttl.dev/v1beta1
-kind: TestStep
-commands:
-  - script: |
-      oc patch OVS -n openstack openvswitch --type='json' -p='[{"op": "replace", "path": "/spec/nodeSelector", "value":{"node": "non-existing-node-name"}}]'
